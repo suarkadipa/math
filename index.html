@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Math Practice</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<canvas id="confetti"></canvas>
+<div class="fpill" id="fpill"><span>⏱</span><div class="fpill-right"><span id="fpillTxt">23:00</span><div class="fpill-tp"><div class="fpill-tf" id="fpillTf" style="width:100%"></div></div></div></div>
+
+<!-- ── Overlays ── -->
+<div class="ov" id="tuOv">
+  <div class="tu-box">
+    <div style="font-size:3.5rem;margin-bottom:10px">⏰</div>
+    <div class="tu-title">Time's Up!</div>
+    <div class="tu-sub">Answers locked. Admin can still check via PIN.</div>
+    <button class="tu-close" onclick="g('tuOv').classList.remove('on')">Got it!</button>
+  </div>
+</div>
+
+<div class="ov" id="pinOv">
+  <div class="pin-box">
+    <div class="pin-title">🔒 Enter PIN</div>
+    <div class="pin-sub">Enter your 4-digit PIN to continue</div>
+    <input class="pin-inp" id="pinInp" type="password" maxlength="4" inputmode="numeric" placeholder="••••" autocomplete="off"/>
+    <div class="pin-err" id="pinErr"></div>
+    <button class="pin-btn" onclick="submitPin()">Confirm</button>
+    <div><span class="pin-lnk" onclick="closePin()">Cancel</span></div>
+  </div>
+</div>
+
+<div class="ov" id="wrongOv">
+  <div class="wm">
+    <div class="ipin-ov" id="ipinOv">
+      <div class="ipin-box">
+        <div class="ipin-title">🔒 Enter PIN to reveal answers</div>
+        <input class="ipin-inp" id="ipinInp" type="password" maxlength="4" inputmode="numeric" placeholder="••••" autocomplete="off"/>
+        <div class="ipin-err" id="ipinErr"></div>
+        <div class="ipin-btns">
+          <button class="ipin-no" onclick="closeIpin()">Cancel</button>
+          <button class="ipin-ok" onclick="submitIpin()">Confirm</button>
+        </div>
+      </div>
+    </div>
+    <div class="wm-title">❌ <span id="wmTitle"></span></div>
+    <div id="wmFail"></div>
+    <div class="wm-tog" onclick="togCorrect()"><div class="tsw" id="tsw"></div><span id="tswLbl">Show correct answers</span></div>
+    <div id="wmList"></div>
+    <button class="wm-close" onclick="closeWrong()">Close</button>
+  </div>
+</div>
+
+<div class="ov" id="cgOv">
+  <div class="cg-box">
+    <div class="cg-emoji">🎉🏆🎉</div>
+    <div class="cg-title" id="cgTitle"></div>
+    <div class="cg-sub" id="cgSub"></div>
+    <div class="cg-stars" id="cgStars"></div>
+    <div class="cg-score" id="cgScore"></div>
+    <div class="cg-streak" id="cgStreak"></div>
+    <button class="cg-close" onclick="g('cgOv').classList.remove('on')">Awesome! ✨</button>
+  </div>
+</div>
+
+<div class="ov" id="cfmOv">
+  <div class="cfm-box">
+    <div class="cfm-title" id="cfmTitle"></div>
+    <div class="cfm-msg" id="cfmMsg"></div>
+    <div class="cfm-btns">
+      <button class="cfm-no" onclick="closeCfm()">Cancel</button>
+      <button class="cfm-ok" id="cfmOk">Yes</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Focus Mode ── -->
+<div class="focus-backdrop" id="focusBackdrop">
+  <div class="focus-wrap">
+    <div class="focus-card" id="focusCard">
+      <div class="focus-header" id="focusHeader">
+        <span id="focusTitle"></span>
+        <button class="focus-close-btn" onclick="restoreInputsToGrid(focusIdx);closeFocus()">✕ Exit Focus</button>
+      </div>
+      <div class="focus-cpw"><div class="focus-cpf" id="focusCpf"></div></div>
+      <div class="focus-body" id="focusBody"></div>
+      <div class="focus-review" id="focusReview">
+        <div class="col-rev-box" id="focusRevBox"></div>
+        <span class="col-rev-lbl" id="focusRevLbl">I've reviewed all answers in this column</span>
+      </div>
+    </div>
+    <div class="focus-controls">
+      <button class="focus-nav-btn" id="focusPrev" onclick="focusNav(-1)">← Prev</button>
+      <div style="flex:1;text-align:center">
+        <div class="focus-counter" id="focusCounter"></div>
+        <div class="focus-dot-row" id="focusDots"></div>
+      </div>
+      <button class="focus-nav-btn" id="focusNext" onclick="focusNav(1)">Next →</button>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:10px;padding:8px 0 0">
+      <div class="focus-fs-controls">
+        <button class="focus-fs-btn" onclick="adjFocusFs(-1)">−</button>
+        <span class="focus-fs-lbl" id="focusFsLbl">1.25×</span>
+        <button class="focus-fs-btn" onclick="adjFocusFs(1)">+</button>
+      </div>
+      <span style="font-size:.72rem;color:var(--sub);font-weight:700">font size</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── Admin ── -->
+<div class="ov" id="admOv">
+  <div class="adm">
+    <div class="adm-hdr">
+      <div><h2>⚙️ Admin Settings</h2><small>Saved to localStorage</small></div>
+      <button class="adm-x" onclick="closeAdm()">✕</button>
+    </div>
+    <div class="adm-body">
+      <div class="adm-sec"><div class="adm-sec-ttl">👤 Student</div>
+        <div class="adm-row"><label>Student name<span class="hint">Greeting & results</span></label><input class="adm-inp" id="as-name" type="text" maxlength="20"/></div>
+        <label style="font-size:.85rem;font-weight:700;color:var(--text)">Welcome message<span class="hint" style="display:inline;margin-left:6px">Empty = random</span></label>
+        <input class="adm-inp full" id="as-welcome" type="text" maxlength="60"/>
+      </div>
+      <div class="adm-sec"><div class="adm-sec-ttl">⏱ Timer</div>
+        <div class="adm-row"><label>Duration (minutes)<span class="hint">1–60</span></label><input class="adm-inp" id="as-timer" type="number" min="1" max="60"/></div>
+        <div class="adm-tog-row"><label>Floating timer<span class="hint" style="display:inline;margin-left:6px">Stays visible while scrolling</span></label><div class="asw" id="as-float" onclick="this.classList.toggle('on')"></div></div>
+      </div>
+      <div class="adm-sec"><div class="adm-sec-ttl">📝 Questions</div>
+        <div class="adm-row"><label>Addition &amp; Subtraction<span class="hint">Per session (1–10)</span></label><input class="adm-inp" id="as-pm" type="number" min="1" max="10"/></div>
+        <div class="adm-row"><label>Number of digits (±)<span class="hint">Digits per number in ± soal</span></label>
+          <select class="adm-sel" id="as-digits">
+            <option value="4">4 digits (e.g. 1,234)</option>
+            <option value="5">5 digits (e.g. 12,345)</option>
+            <option value="6">6 digits (e.g. 123,456)</option>
+            <option value="7">7 digits (e.g. 1,234,567)</option>
+            <option value="8">8 digits (e.g. 12,345,678)</option>
+            <option value="9">9 digits (e.g. 123,456,789)</option>
+          </select>
+        </div>
+        <div class="adm-row"><label>Large mult/col<span class="hint">×10/100/1000 (1–3)</span></label><input class="adm-inp" id="as-bm" type="number" min="1" max="3"/></div>
+        <div class="adm-row"><label>Large div/col<span class="hint">÷10/100/1000 (1–3)</span></label><input class="adm-inp" id="as-bd" type="number" min="1" max="3"/></div>
+      </div>
+      <div class="adm-sec"><div class="adm-sec-ttl">🏆 Scoring</div>
+        <div class="adm-row"><label>Max mistakes to pass<span class="hint">≤ this = congrats</span></label><input class="adm-inp" id="as-pass" type="number" min="0" max="20"/></div>
+        <div class="adm-row"><label>Min mistakes for FAILED<span class="hint">≥ this = failed</span></label><input class="adm-inp" id="as-fail" type="number" min="1" max="30"/></div>
+        <label style="font-size:.85rem;font-weight:700;color:var(--text)">Custom pass message<span class="hint" style="display:inline;margin-left:6px">Added to pool of 10</span></label>
+        <input class="adm-inp full" id="as-passmsg" type="text" maxlength="80" placeholder="Leave empty for default"/>
+        <label style="font-size:.85rem;font-weight:700;color:var(--text);margin-top:10px;display:block">Custom fail message<span class="hint" style="display:inline;margin-left:6px">Added to pool of 10</span></label>
+        <input class="adm-inp full" id="as-failmsg" type="text" maxlength="80" placeholder="Leave empty for default"/>
+      </div>
+      <div class="adm-sec"><div class="adm-sec-ttl">🔍 Focus Mode</div>
+        <div class="adm-tog-row"><label>Auto-skip reviewed cards<span class="hint" style="display:inline;margin-left:6px">→ jumps to next unreviewed</span></label><div class="asw" id="as-focusskip" onclick="this.classList.toggle('on')"></div></div>
+      </div>
+      <div class="adm-sec"><div class="adm-sec-ttl">🎨 Appearance</div>
+        <div class="adm-row">
+          <label>Theme<span class="hint">Color scheme for the app</span></label>
+          <select class="adm-sel" id="as-theme">
+            <option value="dark">🌙 Dark</option>
+            <option value="dark-blue">🌊 Dark Blue</option>
+            <option value="dark-green">🌿 Dark Green</option>
+            <option value="dark-purple">🔮 Dark Purple</option>
+            <option value="dark-red">🔴 Dark Red</option>
+            <option value="dark-orange">🟠 Dark Orange</option>
+            <option value="dark-yellow">🌕 Dark Yellow</option>
+            <option value="dark-pink">🌸 Dark Pink</option>
+            <option value="dark-cyan">🩵 Dark Cyan</option>
+            <option value="light">☀️ Light</option>
+          </select>
+        </div>
+        <div class="adm-row"><label>Splash animation<span class="hint">Random = new every reload</span></label>
+          <select class="adm-sel" id="as-anim">
+            <option value="-1">🎲 Random</option>
+            <option value="0">🌟 Emoji Rain</option>
+            <option value="1">🫧 Bubbles</option>
+            <option value="2">💫 Star Burst</option>
+            <option value="3">🐱 Animals</option>
+            <option value="4">🎊 Confetti</option>
+            <option value="5">🔢 Numbers</option>
+            <option value="6">🍎 Fruits</option>
+          </select>
+        </div>
+        <div class="adm-row"><label>PIN code<span class="hint">4 digits</span></label><input class="adm-inp" id="as-pin" type="password" maxlength="4" inputmode="numeric" placeholder="••••"/></div>
+      </div>
+      <div class="adm-sec"><div class="adm-sec-ttl">🔊 Sound</div>
+        <div class="adm-tog-row"><label>Sound effects<span class="hint" style="display:inline;margin-left:6px">Typing, correct, wrong…</span></label><div class="asw" id="as-sound" onclick="this.classList.toggle('on')"></div></div>
+      </div>
+      <div class="adm-sec"><div class="adm-sec-ttl">🧪 Dev Tools</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+          <button class="test-btn" onclick="closeAdm();testFill('all-correct')">✅ Fill All Correct</button>
+          <button class="test-btn" onclick="closeAdm();testFill('all-wrong')">❌ Fill All Wrong</button>
+          <button class="test-btn" onclick="closeAdm();testFill('one-wrong')">1️⃣ One Wrong</button>
+          <button class="test-btn" onclick="closeAdm();testFill('two-wrong')">2️⃣ Two Wrong</button>
+          <button class="test-btn" onclick="closeAdm();testFill('half-wrong')">🔀 Half Wrong</button>
+          <button class="test-btn" onclick="closeAdm();testFill('empty')">🗑️ Clear All</button>
+        </div>
+        <div style="font-size:.78rem;color:var(--sub);font-weight:600;background:var(--card2);border-radius:8px;padding:8px 12px">⚠️ Fill actions are logged in the cheat counter.</div>
+      </div>
+    </div>
+    <div class="adm-foot" id="admFoot">
+      <button class="adm-cancel" onclick="closeAdm()">Cancel</button>
+      <button class="adm-save" onclick="saveAdm()">💾 Save Settings</button>
+    </div>
+    <div class="adm-toast" id="admToast"></div>
+  </div>
+</div>
+
+<!-- ── Splash ── -->
+<div class="ready-ov" id="readyOv">
+  <div class="ready-box">
+    <div class="ready-emoji-wrap">
+      <span class="sparkle">✨</span><span class="sparkle">⭐</span><span class="sparkle">💫</span>
+      <span style="font-size:5rem;animation:float 2.5s ease-in-out infinite;display:block">🧮</span>
+    </div>
+    <div class="ready-title" id="readyTitle">Hi, Tugus! 👋</div>
+    <div class="ready-sub" id="readySub">Are you ready?</div>
+    <ul class="ready-rules">
+      <li id="ruleTimer">⏱ You have <strong>23 minutes</strong> to finish</li>
+      <li>✏️ Fill in all answers in each column</li>
+      <li>🔢 Multiplication, division &amp; addition</li>
+      <li>🏆 Get a perfect score for 5 stars!</li>
+    </ul>
+    <div class="ready-streak" id="readyStreak"></div>
+    <div style="margin-top:4px">
+      <button onclick="startTest()" style="background:#fff;color:#764ba2;border:none;border-radius:50px;padding:16px 52px;font-size:1.25rem;font-family:'Nunito',sans-serif;font-weight:900;cursor:pointer;box-shadow:0 6px 24px rgba(0,0,0,.2);animation:btnPulse 1.8s infinite">🚀 Let's Go!</button>
+    </div>
+    <div class="ready-timer-txt">Timer starts when you click! (or press Enter)</div>
+  </div>
+  <div class="ready-version">Made with ❤️ by Gus Ari · Powered by Claude AI · v1.4.0</div>
+</div>
+
+<!-- ── Main UI ── -->
+<div class="hdr">
+  <h1 id="mainTitle">📐 Tugus's Math Practice</h1>
+  <p class="sub">Press <strong>Alt+Enter</strong> to check · <strong>Alt+F</strong> to focus first card</p>
+  <div class="theme-wrap">
+    <select class="theme-sel" id="themeDropdown" onchange="onThemeChange(this.value)">
+      <option value="dark">🌙 Dark</option>
+      <option value="dark-blue">🌊 Dark Blue</option>
+      <option value="dark-green">🌿 Dark Green</option>
+      <option value="dark-purple">🔮 Dark Purple</option>
+      <option value="dark-red">🔴 Dark Red</option>
+      <option value="dark-orange">🟠 Dark Orange</option>
+      <option value="dark-yellow">🌕 Dark Yellow</option>
+      <option value="dark-pink">🌸 Dark Pink</option>
+      <option value="dark-cyan">🩵 Dark Cyan</option>
+      <option value="light">☀️ Light</option>
+    </select>
+  </div>
+</div>
+
+<div class="stars-row">
+  <span class="star" id="s1">⭐</span><span class="star" id="s2">⭐</span>
+  <span class="star" id="s3">⭐</span><span class="star" id="s4">⭐</span><span class="star" id="s5">⭐</span>
+</div>
+<div class="result-badge" id="resultBadge"><div class="result-badge-inner"><span class="rb-score" id="rbScore"></span></div></div>
+<div class="streak-bar" id="streakBar"></div>
+<div class="timer-bar">
+  <div class="timer-box" id="tbox">
+    <span>⏱</span>
+    <div><div id="tdisp">23:00</div><div class="tp"><div class="tf" id="tf" style="width:100%"></div></div></div>
+  </div>
+</div>
+
+<div class="grid" id="grid"></div>
+<div class="btn-row">
+  <button class="abtn bchk" id="btnCheck" disabled>✅ Check Answers</button>
+  <button class="abtn brst" id="btnReset">🔄 Reset</button>
+  <button class="abtn bnew" id="btnNew">🎲 New Questions</button>
+</div>
+<div class="chk-ctr" id="chkCtr"></div>
+<div class="rev-prog" id="revProg"></div>
+<div class="cheat-badge" id="cheatBadge"></div>
+<button class="scroll-up" onclick="window.scrollTo({top:0,behavior:'smooth'});">↑</button>
+
+<!-- ── Scripts (urutan penting!) ── -->
+<script src="js/config.js"></script>
+<script src="js/sfx.js"></script>
+<script src="js/quiz.js"></script>
+<script src="js/focus.js"></script>
+<script src="js/admin.js"></script>
+<script src="js/main.js"></script>
+
+</body>
+</html>
