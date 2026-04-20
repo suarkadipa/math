@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Generate Math Practice Icons</title>
+<style>
+  body { font-family: sans-serif; background: #0f0f1a; color: #e2e8f0; padding: 32px; }
+  h2 { color: #a78bfa; margin-bottom: 4px; }
+  p { color: #718096; font-size: 13px; margin-bottom: 28px; }
+  .row { display: flex; align-items: center; gap: 20px; margin-bottom: 20px; }
+  canvas { border: 1px solid #3a3f5c; border-radius: 6px; flex-shrink: 0; }
+  button {
+    background: #8b5cf6; color: #fff; border: none;
+    padding: 9px 18px; border-radius: 7px; cursor: pointer;
+    font-size: 13px; font-weight: 700; letter-spacing: .02em;
+  }
+  button:hover { background: #7c3aed; }
+  .label { font-size: 12px; color: #a0aec0; margin-bottom: 8px; }
+  .done { color: #68d391; font-size: 12px; margin-left: 8px; display: none; }
+</style>
+</head>
+<body>
+<h2>Tugus's Math Practice — Icon Generator</h2>
+<p>
+  Klik setiap tombol Download, lalu simpan file ke folder <code>icons/</code> ini.<br>
+  File ini hanya untuk development — tidak perlu diikutkan di deploy.
+</p>
+
+<div class="row">
+  <canvas id="c192" width="192" height="192"></canvas>
+  <div>
+    <div class="label">icon-192.png &mdash; 192&times;192 (Android install)</div>
+    <button onclick="dl('c192','icon-192.png',this)">Download icon-192.png</button>
+    <span class="done">&#10003; Saved</span>
+  </div>
+</div>
+
+<div class="row">
+  <canvas id="c512" width="512" height="512" style="width:96px;height:96px"></canvas>
+  <div>
+    <div class="label">icon-512.png &mdash; 512&times;512 (Android splash)</div>
+    <button onclick="dl('c512','icon-512.png',this)">Download icon-512.png</button>
+    <span class="done">&#10003; Saved</span>
+  </div>
+</div>
+
+<div class="row">
+  <canvas id="cm192" width="192" height="192"></canvas>
+  <div>
+    <div class="label">icon-maskable-192.png &mdash; 192&times;192 maskable (adaptive icon)</div>
+    <button onclick="dl('cm192','icon-maskable-192.png',this)">Download icon-maskable-192.png</button>
+    <span class="done">&#10003; Saved</span>
+  </div>
+</div>
+
+<div class="row">
+  <canvas id="cm512" width="512" height="512" style="width:96px;height:96px"></canvas>
+  <div>
+    <div class="label">icon-maskable-512.png &mdash; 512&times;512 maskable</div>
+    <button onclick="dl('cm512','icon-maskable-512.png',this)">Download icon-maskable-512.png</button>
+    <span class="done">&#10003; Saved</span>
+  </div>
+</div>
+
+<div class="row">
+  <canvas id="capple" width="180" height="180"></canvas>
+  <div>
+    <div class="label">apple-touch-icon.png &mdash; 180&times;180 (iOS home screen)</div>
+    <button onclick="dl('capple','apple-touch-icon.png',this)">Download apple-touch-icon.png</button>
+    <span class="done">&#10003; Saved</span>
+  </div>
+</div>
+
+<script>
+function drawIcon(canvas, maskable) {
+  var S = canvas.width;
+  var ctx = canvas.getContext('2d');
+  var cx = S / 2, cy = S / 2;
+
+  // ── Background ──────────────────────────────────────────────
+  var grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, S * 0.72);
+  grad.addColorStop(0, '#3b0764');
+  grad.addColorStop(0.55, '#1e0545');
+  grad.addColorStop(1, '#0f0f1a');
+
+  if (maskable) {
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, S, S);
+  } else {
+    ctx.clearRect(0, 0, S, S);
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(cx, cy, S / 2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // ── Subtle ring (standard only) ──────────────────────────────
+  if (!maskable) {
+    ctx.strokeStyle = 'rgba(167,139,250,0.22)';
+    ctx.lineWidth = S * 0.014;
+    ctx.beginPath();
+    ctx.arc(cx, cy, S * 0.44, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  // ── Primary symbol: × (two crossed rectangles at 45°) ───────
+  var armLen = S * 0.295;
+  var armW   = S * 0.092;
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(Math.PI / 4);
+  ctx.fillStyle = '#ffffff';
+  ctx.globalAlpha = 0.96;
+  ctx.beginPath(); ctx.rect(-armLen, -armW/2, armLen*2, armW); ctx.fill();
+  ctx.beginPath(); ctx.rect(-armW/2, -armLen, armW, armLen*2); ctx.fill();
+  ctx.restore();
+  ctx.globalAlpha = 1;
+
+  // ── Accent scale (constrained for maskable safe zone) ───────
+  var asc = maskable ? 0.50 : 0.62;
+  var off = S * asc * 0.37;
+
+  // ÷  bottom-right
+  ctx.save();
+  ctx.translate(cx + off, cy + off);
+  var dotR = S * 0.031, barW = S * 0.098, barH = S * 0.021, dg = S * 0.056;
+  ctx.fillStyle = '#c4b5fd';
+  ctx.globalAlpha = 0.88;
+  ctx.beginPath(); ctx.arc(0, -dg, dotR, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.rect(-barW/2, -barH/2, barW, barH); ctx.fill();
+  ctx.beginPath(); ctx.arc(0,  dg, dotR, 0, Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.globalAlpha = 1;
+
+  // +  top-left
+  ctx.save();
+  ctx.translate(cx - off, cy - off);
+  var pa = S * 0.063, pw = S * 0.021;
+  ctx.fillStyle = '#c4b5fd';
+  ctx.globalAlpha = 0.88;
+  ctx.beginPath(); ctx.rect(-pa, -pw/2, pa*2, pw); ctx.fill();
+  ctx.beginPath(); ctx.rect(-pw/2, -pa, pw, pa*2); ctx.fill();
+  ctx.restore();
+  ctx.globalAlpha = 1;
+}
+
+function dl(id, filename, btn) {
+  var a = document.createElement('a');
+  a.download = filename;
+  a.href = document.getElementById(id).toDataURL('image/png');
+  a.click();
+  var done = btn.nextElementSibling;
+  done.style.display = 'inline';
+}
+
+// Render all icons on load
+drawIcon(document.getElementById('c192'),   false);
+drawIcon(document.getElementById('c512'),   false);
+drawIcon(document.getElementById('cm192'),  true);
+drawIcon(document.getElementById('cm512'),  true);
+drawIcon(document.getElementById('capple'), false);
+</script>
+</body>
+</html>
