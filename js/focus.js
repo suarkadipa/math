@@ -76,7 +76,8 @@ function syncFocusReview() {
   if (focusIdx < 0) return;
   var cd = colData[focusIdx]; if (!cd) return;
   var isReviewed = reviewedCols.has(focusIdx);
-  var isFull = isColFull(cd.cardEl);
+  var colQs = allQ.filter(function(q) { return q.colIdx === focusIdx; });
+  var isFull = colQs.length > 0 && colQs.every(function(q) { return q.inp.value.trim() !== ''; });
   var rev = g('focusReview');
   var box = g('focusRevBox');
   var lbl = g('focusRevLbl');
@@ -158,4 +159,5 @@ function restoreInputsToGrid(colIdx) {
       }
     }
   });
+  refreshColReview(cd.cardEl, colIdx);
 }
