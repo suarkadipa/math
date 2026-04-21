@@ -81,6 +81,20 @@ function renderGrid(cols) {
       var inp = document.createElement('input');
       inp.type = 'text'; inp.className = 'qi'; inp.placeholder = '?'; inp.disabled = true;
       inp.inputMode = 'numeric';
+      inp.addEventListener('keydown', function(e) {
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+          e.preventDefault();
+          var container = document.getElementById('focusBackdrop').classList.contains('on') ? document.getElementById('focusBody') : document.getElementById('grid');
+          var inputs = Array.from(container.querySelectorAll('.qi:not(:disabled)'));
+          var idx = inputs.indexOf(inp);
+          if (idx > -1) {
+            var nextIdx = e.key === 'ArrowDown' ? idx + 1 : idx - 1;
+            if (nextIdx >= 0 && nextIdx < inputs.length) {
+              inputs[nextIdx].focus();
+            }
+          }
+        }
+      });
       inp.addEventListener('input', (function(c, idx) {
         return function() {
           SFX.type();
