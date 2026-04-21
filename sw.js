@@ -1,9 +1,12 @@
 'use strict';
 
-const CACHE_NAME = 'math-practice-v1.4.0';
+importScripts('./js/version.js');
+
+const CACHE_NAME = 'math-practice-' + APP_VERSION;
 
 const PRECACHE_URLS = [
   './index.html',
+  './js/version.js',
   './style.css',
   './manifest.json',
   './js/config.js',

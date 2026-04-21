@@ -112,6 +112,7 @@ g('mainTitle').textContent  = '📐 '+CFG.name+"'s Math Practice";
 g('readyTitle').textContent = 'Hi, '+CFG.name+'! 👋';
 g('readySub').textContent   = CFG.welcome || WELCOME_MSGS[Math.floor(Math.random()*WELCOME_MSGS.length)];
 g('ruleTimer').innerHTML    = '⏱ You have <strong>'+CFG.timer+' minutes</strong> to finish';
+if (g('readyVersion')) g('readyVersion').textContent = 'Made with ❤️ by Gus Ari · Powered by Claude AI · ' + (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '');
 
 // Streak display on splash
 var rs = g('readyStreak');
