@@ -80,6 +80,7 @@ function renderGrid(cols) {
       lbl.innerHTML = '<span class="qn">'+(qi+1)+'</span>'+q.lbl+' =';
       var inp = document.createElement('input');
       inp.type = 'text'; inp.className = 'qi'; inp.placeholder = '?'; inp.disabled = true;
+      inp.inputMode = 'numeric';
       inp.addEventListener('input', (function(c, idx) {
         return function() {
           SFX.type();
