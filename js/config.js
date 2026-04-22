@@ -54,6 +54,7 @@ var autoFill     = 0;
 var cheatChk     = 0;
 var sessionPassed = false;
 var sessionFailRecorded = false;
+var hasStarted    = false;
 var timedOut     = false;
 var TTOTAL       = CFG.timer * 60;
 

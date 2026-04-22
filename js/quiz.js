@@ -79,7 +79,7 @@ function renderGrid(cols) {
       var lbl = document.createElement('span'); lbl.className = q.wide ? 'ql wl' : 'ql';
       lbl.innerHTML = '<span class="qn">'+(qi+1)+'</span>'+q.lbl+' =';
       var inp = document.createElement('input');
-      inp.type = 'text'; inp.className = 'qi'; inp.placeholder = '?'; inp.disabled = true;
+      inp.type = 'text'; inp.className = 'qi'; inp.placeholder = '?'; inp.disabled = !hasStarted;
       inp.inputMode = 'numeric';
       inp.addEventListener('keydown', function(e) {
         if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
@@ -315,7 +315,8 @@ function renderWrong(count) {
   var el=g('wmList'); el.innerHTML='';
   wrongList.slice(0,count).forEach((w,i) => {
     var d=document.createElement('div'); d.className='wi';
-    d.innerHTML='<span class="winum">'+(i+1)+'</span><span class="wiq">'+w.q+' =</span><span class="wiy">'+fmt(w.yours)+'</span><span class="wic">✓ '+fmt(w.correct)+'</span>';
+    var yoursTxt = typeof w.yours === 'number' ? fmt(w.yours) : '<span style="opacity:.5;font-style:italic">Empty</span>';
+    d.innerHTML='<span class="winum">'+(i+1)+'</span><span class="wiq">'+w.q+' =</span><span class="wiy">'+yoursTxt+'</span><span class="wic">✓ '+fmt(w.correct)+'</span>';
     el.appendChild(d);
   });
   el.querySelectorAll('.wic').forEach(e=>e.style.display=showCorr?'inline':'none');
@@ -330,7 +331,10 @@ function renderWrong(count) {
 // RESET / CONFIRM
 // ════════════════════════════════════
 function resetAll() {
-  allQ.forEach(q => { q.inp.value=''; q.inp.className='qi'; q.icon.textContent=''; });
+  allQ.forEach(q => {
+    q.inp.value=''; q.inp.className='qi'; q.icon.textContent='';
+    if (hasStarted && !timedOut) { q.inp.disabled = false; q.inp.style.cursor = ''; }
+  });
   document.querySelectorAll('.cpf,.focus-cpf').forEach(f => f.style.width='0%');
   document.querySelectorAll('.col-review').forEach(r => { r.classList.remove('checked','ready'); r.querySelector('.col-rev-box').textContent=''; });
   document.querySelectorAll('.col-card').forEach(c => c.classList.remove('reviewed'));
@@ -366,11 +370,16 @@ function doCheck() {
 function runCheck() {
   if (timedOut) allQ.forEach(q=>{q.inp.disabled=false;q.inp.style.cursor='';});
   chkCount++; cheatChk++; if(cheatChk>1) updCheat();
-  var correct=0, total=0, wrong=[];
+  var correct=0, total=allQ.length, wrong=[];
   allQ.forEach(q => {
-    if (!q.inp.value) { q.inp.className='qi'; q.icon.textContent=''; return; }
-    total++;
-    var val = parseFloat(q.inp.value.replace(/,/g,''));
+    var valRaw = q.inp.value.trim();
+    if (!valRaw) {
+      q.inp.className='qi wrong';
+      q.icon.textContent='❌';
+      wrong.push({q:q.lbl, yours:'Empty', correct:q.ans});
+      return;
+    }
+    var val = parseFloat(valRaw.replace(/,/g,''));
     if (val===q.ans) { q.inp.className='qi correct'; q.icon.textContent='✅'; correct++; SFX.correct(); }
     else { q.inp.className='qi wrong'; q.icon.textContent='❌'; wrong.push({q:q.lbl,yours:val,correct:q.ans}); SFX.wrong(); }
   });

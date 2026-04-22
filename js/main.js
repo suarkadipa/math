@@ -1,6 +1,6 @@
 'use strict';
 
-var hasStarted = false;
+
 var timerRunId = 0;
 
 function cooldownMsLeft() {
