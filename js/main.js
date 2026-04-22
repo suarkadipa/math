@@ -1,5 +1,8 @@
 'use strict';
 
+var hasStarted = false;
+var timerRunId = 0;
+
 // ── Theme ──
 function applyTheme(t) { document.documentElement.setAttribute('data-theme', t); g('themeDropdown').value = t; }
 function onThemeChange(t) { CFG.theme = t; saveCfg(); applyTheme(t); }
@@ -28,18 +31,21 @@ function updTimer(left) {
   else if (left<=300) { box.classList.add('warning'); pill.classList.add('warning'); }
 }
 function startTimer() {
+  var runId = ++timerRunId;
   TTOTAL=CFG.timer*60; timedOut=false; timerEnd=Date.now()+TTOTAL*1000;
   var warnPlayed=false, dangerPlayed=false, tickIv=null;
   function tick() {
+    if (runId !== timerRunId) return;
     var left = Math.max(0, Math.round((timerEnd-Date.now())/1000));
     updTimer(left);
     if (left<=300&&left>60&&!warnPlayed) { warnPlayed=true; SFX.tick(false); }
     if (left<=60&&!dangerPlayed)         { dangerPlayed=true; tickIv=setInterval(()=>SFX.tick(true),1000); }
-    if (left>0) setTimeout(tick,500); else { if(tickIv)clearInterval(tickIv); onTimeUp(); }
+    if (left>0) setTimeout(tick,500); else { if(tickIv)clearInterval(tickIv); onTimeUp(runId); }
   }
   tick();
 }
-function onTimeUp() {
+function onTimeUp(runId) {
+  if (typeof runId === 'number' && runId !== timerRunId) return;
   timedOut=true; updTimer(0); SFX.bell();
   allQ.forEach(q => { q.inp.disabled=true; q.inp.style.cursor='not-allowed'; });
   g('btnCheck').disabled=false; g('tuOv').classList.add('on');
@@ -47,8 +53,10 @@ function onTimeUp() {
 
 // ── Start test ──
 function startTest() {
+  if (hasStarted) return;
+  hasStarted = true;
   SFX.launch();
-  var ov=g('readyOv'); ov.style.transition='opacity .5s'; ov.style.opacity='0';
+  var ov=g('readyOv'); ov.style.transition='opacity .5s'; ov.style.opacity='0'; ov.style.pointerEvents='none';
   setTimeout(()=>ov.style.display='none', 500);
   allQ.forEach(q=>q.inp.disabled=false); startTimer();
 }
