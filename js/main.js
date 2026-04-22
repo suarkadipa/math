@@ -37,9 +37,11 @@ function refreshCooldownUI() {
   var streak = g('readyStreak');
   var timerTxt = g('readyTimerTxt');
   var sub = g('readySub');
+  var hstreak = g('headerStreak');
   if (!box || !btn) return;
   var active = isCooldownActive();
   if (active) {
+    if (hstreak) hstreak.style.display = 'none';
     var left = cooldownMsLeft();
     if (rules) rules.style.display = 'none';
     if (streak) streak.style.display = 'none';
@@ -52,6 +54,17 @@ function refreshCooldownUI() {
     btn.style.opacity = '.65';
     btn.style.cursor = 'not-allowed';
     btn.textContent = '⏳ Cooldown Active';
+
+    // Auto-redirect to splash if active but hidden (and not currently checking or reviewing errors)
+    var ov = g('readyOv');
+    var isWrongOpen = g('wrongOv') && g('wrongOv').classList.contains('on');
+    if (!isChecking && !isWrongOpen && ov && (ov.style.display === 'none' || hasStarted)) {
+      ov.style.display = 'flex';
+      ov.style.opacity = '1';
+      ov.style.pointerEvents = 'auto';
+      hasStarted = false;
+      timerRunId++; // Stop any running timer
+    }
   } else {
     var limit = Math.max(1, parseInt(CFG.failstreaklimit) || DEF.failstreaklimit);
     if (rules) rules.style.display = '';
@@ -59,10 +72,16 @@ function refreshCooldownUI() {
     if (timerTxt) timerTxt.style.display = '';
     if (sub) sub.style.display = '';
     box.style.display = 'block';
-    box.innerHTML = CD.failStreak > 0
+    var msg = CD.failStreak > 0
       ? '⚠️ Failed streak: <strong>' + CD.failStreak + ' / ' + limit + '</strong>. Reach the limit and cooldown will start.'
       : '';
+    box.innerHTML = msg;
     box.style.display = CD.failStreak > 0 ? 'block' : 'none';
+    var hstreak = g('headerStreak');
+    if (hstreak) {
+      hstreak.innerHTML = msg;
+      hstreak.style.display = CD.failStreak > 0 ? 'block' : 'none';
+    }
     btn.disabled = false;
     btn.style.opacity = '';
     btn.style.cursor = 'pointer';
@@ -190,6 +209,9 @@ document.addEventListener('keydown', e => {
 
   // Splash specific logic
   if (isSplash) {
+    // If any modal is open (PIN, Admin, etc.), don't interfere with keys
+    if (document.querySelector('.ov.on:not(#readyOv)')) return;
+
     if (e.key === 'Enter') { e.preventDefault(); startTest(); return; }
     if (e.altKey && e.code === 'KeyA') { e.preventDefault(); openPin(openAdm); return; }
     return; // Block all other shortcuts on splash

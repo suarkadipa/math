@@ -119,6 +119,11 @@ function saveAdm() {
 }
 
 function skipToQuiz() {
+  if (isCooldownActive()) {
+    closeAdm();
+    refreshCooldownUI();
+    return;
+  }
   closeAdm();
   g('readyOv').style.display = 'none';
   hasStarted = true;
@@ -134,9 +139,19 @@ function resetCooldown() {
     CD.cooldownUntil = 0;
     CD.cooldownStartedAt = 0;
     saveCooldownState();
+    closeAdm(); // Close admin panel
+    
+    // Force show splash screen
+    var ov = g('readyOv');
+    if (ov) {
+      ov.style.display = 'flex';
+      ov.style.opacity = '1';
+      ov.style.pointerEvents = 'auto';
+    }
+    hasStarted = false;
+    timerRunId++; // Stop any running timer
+
     if (typeof refreshCooldownUI === 'function') refreshCooldownUI();
     updateAdmCooldownMeta();
-    g('admToast').textContent = '✅ Cooldown reset!';
-    setTimeout(() => g('admToast').textContent = '', 2500);
   });
 }

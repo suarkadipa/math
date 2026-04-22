@@ -52,6 +52,7 @@ var pinCb        = null;
 var timerEnd     = 0;
 var autoFill     = 0;
 var cheatChk     = 0;
+var isChecking      = false;
 var sessionPassed = false;
 var sessionFailRecorded = false;
 var hasStarted    = false;

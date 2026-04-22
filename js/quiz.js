@@ -302,7 +302,11 @@ function togCorrect() {
 // ════════════════════════════════════
 // WRONG MODAL
 // ════════════════════════════════════
-function closeWrong() { g('wrongOv').classList.remove('on'); SFX.close(); }
+function closeWrong() {
+  g('wrongOv').classList.remove('on');
+  SFX.close();
+  if (isCooldownActive()) refreshCooldownUI();
+}
 function showWrong(list) {
   wrongList=list; showCorr=false; g('tsw').classList.remove('on'); g('tswLbl').textContent='Show correct answers'; g('ipinOv').classList.remove('on');
   g('wmTitle').textContent = list.length+' incorrect answer'+(list.length>1?'s':'');
@@ -368,6 +372,7 @@ function doCheck() {
   runCheck();
 }
 function runCheck() {
+  isChecking = true;
   if (timedOut) allQ.forEach(q=>{q.inp.disabled=false;q.inp.style.cursor='';});
   chkCount++; cheatChk++; if(cheatChk>1) updCheat();
   var correct=0, total=allQ.length, wrong=[];
@@ -407,6 +412,7 @@ function runCheck() {
     }
     showWrong(wrong);
   }
+  isChecking = false;
 }
 
 // ════════════════════════════════════
