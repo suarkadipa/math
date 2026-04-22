@@ -89,8 +89,8 @@ document.addEventListener('keydown', e => {
   // Focus mode navigation
   if (g('focusBackdrop').classList.contains('on')) {
     if (e.key==='Escape')    { restoreInputsToGrid(focusIdx); closeFocus(); return; }
-    if (e.key==='ArrowRight') { e.preventDefault(); focusNav(1); return; }
-    if (e.key==='ArrowLeft')  { e.preventDefault(); focusNav(-1); return; }
+    if (CFG.focusarrows !== false && e.key==='ArrowRight') { e.preventDefault(); focusNav(1); return; }
+    if (CFG.focusarrows !== false && e.key==='ArrowLeft')  { e.preventDefault(); focusNav(-1); return; }
   }
   if (e.altKey && e.key==='Enter')    { e.preventDefault(); openPin(doCheck); }
   if (e.altKey && e.code==='KeyB')    { e.preventDefault(); showCfm('Reset Answers','Reset all answers?',resetAll); }

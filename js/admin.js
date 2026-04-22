@@ -7,6 +7,7 @@ function openAdm() {
   g('as-float').classList.toggle('on', CFG.float);
   g('as-sound').classList.toggle('on', CFG.sound);
   g('as-focusskip').classList.toggle('on', CFG.focusskip !== false);
+  g('as-focusarrows').classList.toggle('on', CFG.focusarrows !== false);
   g('as-pm').value      = CFG.pm;
   g('as-digits').value  = String(CFG.digits || 7);
   g('as-bm').value      = CFG.bm;
@@ -32,6 +33,7 @@ function saveAdm() {
   CFG.float     = g('as-float').classList.contains('on');
   CFG.sound     = g('as-sound').classList.contains('on');
   CFG.focusskip = g('as-focusskip').classList.contains('on');
+  CFG.focusarrows = g('as-focusarrows').classList.contains('on');
   CFG.pm        = Math.min(10, Math.max(1, parseInt(g('as-pm').value) || DEF.pm));
   CFG.digits    = parseInt(g('as-digits').value) || 7;
   CFG.bm        = Math.min(3, Math.max(1, parseInt(g('as-bm').value) || DEF.bm));
