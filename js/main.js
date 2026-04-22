@@ -3,6 +3,83 @@
 var hasStarted = false;
 var timerRunId = 0;
 
+function cooldownMsLeft() { return Math.max(0, (CD.cooldownUntil || 0) - Date.now()); }
+function isCooldownActive() {
+  if (cooldownMsLeft() > 0) return true;
+  if (CD.cooldownUntil) {
+    CD.cooldownUntil = 0;
+    CD.failStreak = 0;
+    saveCooldownState();
+  }
+  return false;
+}
+function fmtCooldownLeft(ms) {
+  var totalSec = Math.ceil(ms / 1000);
+  var d = Math.floor(totalSec / 86400);
+  var h = Math.floor((totalSec % 86400) / 3600);
+  var m = Math.floor((totalSec % 3600) / 60);
+  if (d > 0) return d + ' day' + (d > 1 ? 's' : '') + (h > 0 ? ' ' + h + 'h' : '');
+  if (h > 0) return h + 'h ' + m + 'm';
+  return m + 'm';
+}
+function refreshCooldownUI() {
+  var box = g('readyCooldown');
+  var btn = g('readyStartBtn');
+  var rules = g('readyRules');
+  var streak = g('readyStreak');
+  var timerTxt = g('readyTimerTxt');
+  var sub = g('readySub');
+  if (!box || !btn) return;
+  var active = isCooldownActive();
+  if (active) {
+    var left = cooldownMsLeft();
+    if (rules) rules.style.display = 'none';
+    if (streak) streak.style.display = 'none';
+    if (timerTxt) timerTxt.style.display = 'none';
+    if (sub) sub.style.display = 'none';
+    box.style.display = 'block';
+    box.innerHTML = '⛔ Cooldown active after repeated failed sessions.<br>You can try again in <strong>' + fmtCooldownLeft(left) + '</strong>.';
+    btn.disabled = true;
+    btn.style.opacity = '.65';
+    btn.style.cursor = 'not-allowed';
+    btn.textContent = '⏳ Cooldown Active';
+  } else {
+    var limit = Math.max(1, parseInt(CFG.failstreaklimit) || DEF.failstreaklimit);
+    if (rules) rules.style.display = '';
+    if (streak) streak.style.display = 'table';
+    if (timerTxt) timerTxt.style.display = '';
+    if (sub) sub.style.display = '';
+    box.style.display = 'block';
+    box.innerHTML = CD.failStreak > 0
+      ? '⚠️ Failed streak: <strong>' + CD.failStreak + ' / ' + limit + '</strong>. Reach the limit and cooldown will start.'
+      : '';
+    box.style.display = CD.failStreak > 0 ? 'block' : 'none';
+    btn.disabled = false;
+    btn.style.opacity = '';
+    btn.style.cursor = 'pointer';
+    btn.textContent = "🚀 Let's Go!";
+  }
+}
+function onSessionPassed() {
+  if (CD.failStreak !== 0 || CD.cooldownUntil) {
+    CD.failStreak = 0;
+    CD.cooldownUntil = 0;
+    saveCooldownState();
+  }
+  refreshCooldownUI();
+}
+function onSessionFailed() {
+  if (isCooldownActive()) { refreshCooldownUI(); return; }
+  CD.failStreak++;
+  var limit = Math.max(1, parseInt(CFG.failstreaklimit) || DEF.failstreaklimit);
+  if (CD.failStreak >= limit) {
+    var days = Math.max(1, parseInt(CFG.cooldowndays) || DEF.cooldowndays);
+    CD.cooldownUntil = Date.now() + days * 24 * 60 * 60 * 1000;
+    CD.failStreak = 0;
+  }
+  saveCooldownState();
+  refreshCooldownUI();
+}
 // ── Theme ──
 function applyTheme(t) { document.documentElement.setAttribute('data-theme', t); g('themeDropdown').value = t; }
 function onThemeChange(t) { CFG.theme = t; saveCfg(); applyTheme(t); }
@@ -52,7 +129,13 @@ function onTimeUp(runId) {
 }
 
 // ── Start test ──
-function startTest() {
+function startTest(adminBypass) {
+  if (!adminBypass && isCooldownActive()) {
+    var left = fmtCooldownLeft(cooldownMsLeft());
+    showCfm('Cooldown Active', 'Too many failed sessions. You can try again in ' + left + '.', function(){});
+    refreshCooldownUI();
+    return;
+  }
   if (hasStarted) return;
   hasStarted = true;
   SFX.launch();
@@ -128,5 +211,6 @@ if (streak > 0)          rs.innerHTML = '🔥 Current streak: <strong>'+streak+'
 else if (longestStreak>0) rs.innerHTML = '🏅 Best streak: <strong>'+longestStreak+'</strong> — can you beat it?';
 else                       rs.innerHTML = '🌟 No streak yet — go for it!';
 
+refreshCooldownUI();
 initSplashAnim();
 genAll();

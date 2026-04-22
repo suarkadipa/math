@@ -160,7 +160,7 @@ h1{font-size:2rem;font-weight:900;color:var(--pri);margin-bottom:4px}
 .scroll-up:hover{transform:translateY(-3px) scale(1.08)}
 
 /* ── Overlays ── */
-.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1500;align-items:center;justify-content:center}
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100000;align-items:center;justify-content:center}
 .ov.on{display:flex}
 .pin-box{background:var(--card);border-radius:20px;padding:32px;max-width:320px;width:90%;text-align:center;box-shadow:var(--shlg)}
 .pin-title{font-size:1.15rem;font-weight:900;color:var(--text);margin-bottom:6px}

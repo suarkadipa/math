@@ -1,5 +1,37 @@
 'use strict';
 
+var admCdIv = null;
+
+function fmtAbsDt(ts) {
+  try {
+    return new Date(ts).toLocaleString('en-US', {
+      year: 'numeric', month: 'short', day: '2-digit',
+      hour: '2-digit', minute: '2-digit'
+    });
+  } catch (e) { return '-'; }
+}
+
+function updateAdmCooldownMeta() {
+  var el = g('admCooldownMeta'); if (!el) return;
+  var limit = Math.max(1, parseInt(CFG.failstreaklimit) || DEF.failstreaklimit);
+  var fs = Math.max(0, parseInt(CD.failStreak) || 0);
+  var active = typeof isCooldownActive === 'function' ? isCooldownActive() : false;
+  if (active) {
+    var leftMs = typeof cooldownMsLeft === 'function' ? cooldownMsLeft() : Math.max(0, (CD.cooldownUntil || 0) - Date.now());
+    var leftTxt = typeof fmtCooldownLeft === 'function' ? fmtCooldownLeft(leftMs) : Math.ceil(leftMs/60000) + 'm';
+    el.innerHTML =
+      '⛔ Cooldown status: <span style="color:var(--bad)">ACTIVE</span><br>' +
+      '⏳ Remaining: <strong>' + leftTxt + '</strong><br>' +
+      '📅 Ends at: <strong>' + fmtAbsDt(CD.cooldownUntil) + '</strong><br>' +
+      '📉 Failed streak progress: <strong>' + fs + ' / ' + limit + '</strong>';
+  } else {
+    el.innerHTML =
+      '✅ Cooldown status: <span style="color:var(--ok)">INACTIVE</span><br>' +
+      '📉 Failed streak progress: <strong>' + fs + ' / ' + limit + '</strong><br>' +
+      'ℹ️ Cooldown starts when failed streak reaches the configured limit.';
+  }
+}
+
 function openAdm() {
   g('as-name').value    = CFG.name;
   g('as-welcome').value = CFG.welcome || '';
@@ -14,6 +46,8 @@ function openAdm() {
   g('as-bd').value      = CFG.bd;
   g('as-pass').value    = CFG.pass;
   g('as-fail').value    = CFG.fail;
+  g('as-failstreaklimit').value = CFG.failstreaklimit || DEF.failstreaklimit;
+  g('as-cooldowndays').value    = CFG.cooldowndays || DEF.cooldowndays;
   g('as-passmsg').value = CFG.passmsg || '';
   g('as-failmsg').value = CFG.failmsg || '';
   g('as-anim').value    = CFG.anim;
@@ -21,10 +55,16 @@ function openAdm() {
   g('as-theme').value   = CFG.theme || 'dark';
   g('admToast').textContent = '';
   ['ar1','ar2'].forEach(id => { var e=g(id); if(e) e.remove(); });
+  if (admCdIv) { clearInterval(admCdIv); admCdIv = null; }
+  updateAdmCooldownMeta();
+  admCdIv = setInterval(updateAdmCooldownMeta, 1000);
   g('admOv').classList.add('on');
 }
 
-function closeAdm() { g('admOv').classList.remove('on'); }
+function closeAdm() {
+  if (admCdIv) { clearInterval(admCdIv); admCdIv = null; }
+  g('admOv').classList.remove('on');
+}
 
 function saveAdm() {
   CFG.name      = g('as-name').value.trim() || DEF.name;
@@ -40,6 +80,8 @@ function saveAdm() {
   CFG.bd        = Math.min(3, Math.max(1, parseInt(g('as-bd').value) || DEF.bd));
   CFG.pass      = Math.max(0, parseInt(g('as-pass').value) || DEF.pass);
   CFG.fail      = Math.max(1, parseInt(g('as-fail').value) || DEF.fail);
+  CFG.failstreaklimit = Math.max(1, parseInt(g('as-failstreaklimit').value) || DEF.failstreaklimit);
+  CFG.cooldowndays    = Math.max(1, parseInt(g('as-cooldowndays').value) || DEF.cooldowndays);
   CFG.passmsg   = g('as-passmsg').value.trim();
   CFG.failmsg   = g('as-failmsg').value.trim();
   CFG.anim      = parseInt(g('as-anim').value);
@@ -53,6 +95,8 @@ function saveAdm() {
   g('readySub').textContent   = CFG.welcome || WELCOME_MSGS[Math.floor(Math.random()*WELCOME_MSGS.length)];
   g('ruleTimer').innerHTML    = '⏱ You have <strong>'+CFG.timer+' minutes</strong> to finish';
   TTOTAL = CFG.timer * 60;
+  if (typeof refreshCooldownUI === 'function') refreshCooldownUI();
+  updateAdmCooldownMeta();
 
   g('admToast').textContent = '✅ Settings saved!';
   setTimeout(() => g('admToast').textContent = '', 2500);
@@ -71,6 +115,7 @@ function saveAdm() {
 function skipToQuiz() {
   closeAdm();
   g('readyOv').style.display = 'none';
+  hasStarted = true;
   genAll();
   allQ.forEach(q => q.inp.disabled = false);
   g('btnCheck').disabled = true;

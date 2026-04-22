@@ -49,7 +49,7 @@ function renderGrid(cols) {
   g('resultBadge').style.display = 'none';
   g('rbScore').textContent = '';
   chkCount = 0; cheatChk = 0; reviewedCols = new Set();
-  totalCols = cols.length; sessionPassed = false;
+  totalCols = cols.length; sessionPassed = false; sessionFailRecorded = false;
   streak = parseInt(localStorage.getItem('streak') || '0');
   ['s1','s2','s3','s4','s5'].forEach(s => g(s).classList.remove('lit'));
   g('btnCheck').disabled = true;
@@ -381,16 +381,23 @@ function runCheck() {
   g('resultBadge').style.display='block';
   updStars(wrong.length, total);
   if (total>0 && wrong.length===0) {
-    if (!sessionPassed) { sessionPassed=true; updStreak(true); }
+    if (!sessionPassed) { sessionPassed=true; updStreak(true); if (typeof onSessionPassed === 'function') onSessionPassed(); }
     SFX.fanfare(); g('cgTitle').textContent='Perfect Score!'; g('cgSub').textContent='Congratulations, '+CFG.name+'! '+randMsg(PASS_MSGS,CFG.passmsg);
     g('cgStars').textContent='⭐⭐⭐⭐⭐'; g('cgScore').textContent='✅ '+correct+' / '+total+' — Score: 100';
     g('cgOv').classList.add('on'); launchConfetti();
   } else if (wrong.length>0 && wrong.length<=CFG.pass) {
-    if (!sessionPassed) { sessionPassed=true; updStreak(true); }
+    if (!sessionPassed) { sessionPassed=true; updStreak(true); if (typeof onSessionPassed === 'function') onSessionPassed(); }
     SFX.fanfare(); g('cgTitle').textContent='Well Done, '+CFG.name+'!'; g('cgSub').textContent=randMsg(PASS_MSGS,CFG.passmsg);
     g('cgStars').textContent='⭐⭐⭐⭐'; g('cgScore').textContent='✅ '+correct+' / '+total+' — Score: '+sc;
     g('cgOv').classList.add('on'); launchConfetti();
-  } else if (wrong.length>0) { if(!sessionPassed) updStreak(false); showWrong(wrong); }
+  } else if (wrong.length>0) {
+    if(!sessionPassed) updStreak(false);
+    if (!sessionPassed && !sessionFailRecorded && wrong.length >= CFG.fail) {
+      sessionFailRecorded = true;
+      if (typeof onSessionFailed === 'function') onSessionFailed();
+    }
+    showWrong(wrong);
+  }
 }
 
 // ════════════════════════════════════

@@ -4,7 +4,8 @@
 const DEF = {
   name: 'Tugus', welcome: '', timer: 23, pm: 5, digits: 7,
   bm: 3, bd: 3, pass: 2, fail: 3, passmsg: '', failmsg: '',
-  theme: 'dark', anim: -1, pin: '0436', float: true, sound: true, focusskip: true, focusarrows: false
+  theme: 'dark', anim: -1, pin: '0436', float: true, sound: true, focusskip: true, focusarrows: false,
+  failstreaklimit: 3, cooldowndays: 2
 };
 
 function loadCfg() {
@@ -17,6 +18,21 @@ function loadCfg() {
 function saveCfg() { localStorage.setItem('mc', JSON.stringify(CFG)); }
 
 var CFG = loadCfg();
+
+const CD_KEY = 'mcCooldownState';
+function loadCooldownState() {
+  try {
+    var s = JSON.parse(localStorage.getItem(CD_KEY) || '{}');
+    return {
+      failStreak: Math.max(0, parseInt(s.failStreak) || 0),
+      cooldownUntil: Math.max(0, parseInt(s.cooldownUntil) || 0)
+    };
+  } catch (e) {
+    return { failStreak: 0, cooldownUntil: 0 };
+  }
+}
+function saveCooldownState() { localStorage.setItem(CD_KEY, JSON.stringify(CD)); }
+var CD = loadCooldownState();
 
 // ── Shared quiz state ──
 var allQ      = [];   // {ans, inp, icon, lbl, colIdx}
@@ -33,6 +49,7 @@ var timerEnd     = 0;
 var autoFill     = 0;
 var cheatChk     = 0;
 var sessionPassed = false;
+var sessionFailRecorded = false;
 var timedOut     = false;
 var TTOTAL       = CFG.timer * 60;
 
