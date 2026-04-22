@@ -67,9 +67,11 @@ function renderFocusCard(colIdx) {
 function syncFocusProg() {
   if (focusIdx < 0) return;
   var cd = colData[focusIdx]; if (!cd) return;
-  var ins = cd.cardEl.querySelectorAll('.qi');
-  var f = Array.from(ins).filter(i => i.value.trim() !== '').length;
-  g('focusCpf').style.width = ins.length ? (f/ins.length*100)+'%' : '0%';
+  // In Focus Mode, inputs are moved out of the grid card into #focusBody,
+  // so progress must be computed from question state, not card DOM.
+  var colQs = allQ.filter(function(q) { return q.colIdx === focusIdx; });
+  var f = colQs.filter(function(q) { return q.inp.value.trim() !== ''; }).length;
+  g('focusCpf').style.width = colQs.length ? (f/colQs.length*100)+'%' : '0%';
 }
 
 function syncFocusReview() {

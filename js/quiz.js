@@ -190,10 +190,10 @@ function updRevProg() {
 
 function updColProg() {
   colData.forEach(cd => {
-    var ins = cd.cardEl.querySelectorAll('.qi');
-    var f = Array.from(ins).filter(i => i.value.trim() !== '').length;
+    var colQs = allQ.filter(function(q) { return q.colIdx === cd.colIdx; });
+    var f = colQs.filter(function(q) { return q.inp.value.trim() !== ''; }).length;
     var fill = cd.cardEl.querySelector('.cpf');
-    if (fill && ins.length) fill.style.width = (f/ins.length*100)+'%';
+    if (fill) fill.style.width = colQs.length ? (f/colQs.length*100)+'%' : '0%';
   });
   if (focusIdx >= 0) syncFocusProg();
 }
