@@ -23,12 +23,16 @@ const CD_KEY = 'mcCooldownState';
 function loadCooldownState() {
   try {
     var s = JSON.parse(localStorage.getItem(CD_KEY) || '{}');
+    var until = Math.max(0, parseInt(s.cooldownUntil) || 0);
+    var startedAt = Math.max(0, parseInt(s.cooldownStartedAt) || 0);
+    if (until > 0 && !startedAt) startedAt = until - (DEF.cooldowndays * 24 * 60 * 60 * 1000);
     return {
       failStreak: Math.max(0, parseInt(s.failStreak) || 0),
-      cooldownUntil: Math.max(0, parseInt(s.cooldownUntil) || 0)
+      cooldownUntil: until,
+      cooldownStartedAt: startedAt
     };
   } catch (e) {
-    return { failStreak: 0, cooldownUntil: 0 };
+    return { failStreak: 0, cooldownUntil: 0, cooldownStartedAt: 0 };
   }
 }
 function saveCooldownState() { localStorage.setItem(CD_KEY, JSON.stringify(CD)); }

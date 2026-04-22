@@ -30,6 +30,8 @@ function updateAdmCooldownMeta() {
       '📉 Failed streak progress: <strong>' + fs + ' / ' + limit + '</strong><br>' +
       'ℹ️ Cooldown starts when failed streak reaches the configured limit.';
   }
+  var btn = g('admResetCd');
+  if (btn) btn.style.display = (active || fs > 0) ? 'block' : 'none';
 }
 
 function openAdm() {
@@ -82,6 +84,10 @@ function saveAdm() {
   CFG.fail      = Math.max(1, parseInt(g('as-fail').value) || DEF.fail);
   CFG.failstreaklimit = Math.max(1, parseInt(g('as-failstreaklimit').value) || DEF.failstreaklimit);
   CFG.cooldowndays    = Math.max(1, parseInt(g('as-cooldowndays').value) || DEF.cooldowndays);
+  if (CD.cooldownStartedAt && CD.cooldownUntil > 0) {
+    CD.cooldownUntil = CD.cooldownStartedAt + CFG.cooldowndays * 24 * 60 * 60 * 1000;
+    saveCooldownState();
+  }
   CFG.passmsg   = g('as-passmsg').value.trim();
   CFG.failmsg   = g('as-failmsg').value.trim();
   CFG.anim      = parseInt(g('as-anim').value);
@@ -120,4 +126,17 @@ function skipToQuiz() {
   allQ.forEach(q => q.inp.disabled = false);
   g('btnCheck').disabled = true;
   startTimer();
+}
+
+function resetCooldown() {
+  showCfm('Reset Cooldown', 'Clear active cooldown and failed streak?', function() {
+    CD.failStreak = 0;
+    CD.cooldownUntil = 0;
+    CD.cooldownStartedAt = 0;
+    saveCooldownState();
+    if (typeof refreshCooldownUI === 'function') refreshCooldownUI();
+    updateAdmCooldownMeta();
+    g('admToast').textContent = '✅ Cooldown reset!';
+    setTimeout(() => g('admToast').textContent = '', 2500);
+  });
 }

@@ -156,6 +156,7 @@
         <div class="adm-row"><label>Failed streak limit<span class="hint">Cooldown starts at this number</span></label><input class="adm-inp" id="as-failstreaklimit" type="number" min="1" max="20"/></div>
         <div class="adm-row"><label>Cooldown (days)<span class="hint">Real-time lock duration</span></label><input class="adm-inp" id="as-cooldowndays" type="number" min="1" max="30"/></div>
         <div id="admCooldownMeta" style="margin-top:10px;padding:10px 12px;border-radius:10px;background:var(--card2);font-size:.8rem;font-weight:700;color:var(--sub);line-height:1.5"></div>
+        <button class="test-btn" id="admResetCd" onclick="resetCooldown()" style="margin-top:8px;background:linear-gradient(135deg,#f093fb,#f5576c);color:#fff;border:none;width:100%;display:none">🔄 Reset Cooldown</button>
         <label style="font-size:.85rem;font-weight:700;color:var(--text)">Custom pass message<span class="hint" style="display:inline;margin-left:6px">Added to pool of 10</span></label>
         <input class="adm-inp full" id="as-passmsg" type="text" maxlength="80" placeholder="Leave empty for default"/>
         <label style="font-size:.85rem;font-weight:700;color:var(--text);margin-top:10px;display:block">Custom fail message<span class="hint" style="display:inline;margin-left:6px">Added to pool of 10</span></label>

@@ -3,11 +3,19 @@
 var hasStarted = false;
 var timerRunId = 0;
 
-function cooldownMsLeft() { return Math.max(0, (CD.cooldownUntil || 0) - Date.now()); }
+function cooldownMsLeft() {
+  if (CD.cooldownStartedAt && CD.cooldownUntil > 0) {
+    var days = Math.max(1, parseInt(CFG.cooldowndays) || DEF.cooldowndays);
+    var target = CD.cooldownStartedAt + days * 24 * 60 * 60 * 1000;
+    return Math.max(0, target - Date.now());
+  }
+  return Math.max(0, (CD.cooldownUntil || 0) - Date.now());
+}
 function isCooldownActive() {
   if (cooldownMsLeft() > 0) return true;
   if (CD.cooldownUntil) {
     CD.cooldownUntil = 0;
+    CD.cooldownStartedAt = 0;
     CD.failStreak = 0;
     saveCooldownState();
   }
@@ -38,7 +46,8 @@ function refreshCooldownUI() {
     if (timerTxt) timerTxt.style.display = 'none';
     if (sub) sub.style.display = 'none';
     box.style.display = 'block';
-    box.innerHTML = '⛔ Cooldown active after repeated failed sessions.<br>You can try again in <strong>' + fmtCooldownLeft(left) + '</strong>.';
+    var limit = Math.max(1, parseInt(CFG.failstreaklimit) || DEF.failstreaklimit);
+    box.innerHTML = '⛔ Cooldown active after <strong>' + limit + '</strong> consecutive failed sessions.<br>You can try again in <strong>' + fmtCooldownLeft(left) + '</strong>.';
     btn.disabled = true;
     btn.style.opacity = '.65';
     btn.style.cursor = 'not-allowed';
@@ -64,6 +73,7 @@ function onSessionPassed() {
   if (CD.failStreak !== 0 || CD.cooldownUntil) {
     CD.failStreak = 0;
     CD.cooldownUntil = 0;
+    CD.cooldownStartedAt = 0;
     saveCooldownState();
   }
   refreshCooldownUI();
@@ -74,7 +84,8 @@ function onSessionFailed() {
   var limit = Math.max(1, parseInt(CFG.failstreaklimit) || DEF.failstreaklimit);
   if (CD.failStreak >= limit) {
     var days = Math.max(1, parseInt(CFG.cooldowndays) || DEF.cooldowndays);
-    CD.cooldownUntil = Date.now() + days * 24 * 60 * 60 * 1000;
+    CD.cooldownStartedAt = Date.now();
+    CD.cooldownUntil = CD.cooldownStartedAt + days * 24 * 60 * 60 * 1000;
     CD.failStreak = 0;
   }
   saveCooldownState();
@@ -175,19 +186,26 @@ g('btnNew').onclick   = () => { SFX.click(); showCfm('New Questions','Generate n
 
 // ── Keyboard shortcuts ──
 document.addEventListener('keydown', e => {
-  // Splash Enter → start
-  if (e.key==='Enter' && g('readyOv') && g('readyOv').style.display!=='none' && g('readyOv').style.opacity!=='0') { e.preventDefault(); startTest(); return; }
-  // Focus mode navigation
-  if (g('focusBackdrop').classList.contains('on')) {
-    if (e.key==='Escape')    { restoreInputsToGrid(focusIdx); closeFocus(); return; }
-    if (CFG.focusarrows !== false && e.key==='ArrowRight') { e.preventDefault(); focusNav(1); return; }
-    if (CFG.focusarrows !== false && e.key==='ArrowLeft')  { e.preventDefault(); focusNav(-1); return; }
+  var isSplash = g('readyOv') && g('readyOv').style.display !== 'none';
+
+  // Splash specific logic
+  if (isSplash) {
+    if (e.key === 'Enter') { e.preventDefault(); startTest(); return; }
+    if (e.altKey && e.code === 'KeyA') { e.preventDefault(); openPin(openAdm); return; }
+    return; // Block all other shortcuts on splash
   }
-  if (e.altKey && e.key==='Enter')    { e.preventDefault(); openPin(doCheck); }
-  if (e.altKey && e.code==='KeyB')    { e.preventDefault(); showCfm('Reset Answers','Reset all answers?',resetAll); }
-  if (e.altKey && e.code==='KeyN')    { e.preventDefault(); showCfm('New Questions','Generate new questions? All answers will be lost.',genAll); }
-  if (e.altKey && e.code==='KeyA')    { e.preventDefault(); openPin(openAdm); }
-  if (e.altKey && e.code==='KeyF')    { e.preventDefault(); if(focusIdx<0) openFocus(0); else { restoreInputsToGrid(focusIdx); closeFocus(); } }
+
+  // Quiz active shortcuts
+  if (g('focusBackdrop').classList.contains('on')) {
+    if (e.key === 'Escape') { restoreInputsToGrid(focusIdx); closeFocus(); return; }
+    if (CFG.focusarrows !== false && e.key === 'ArrowRight') { e.preventDefault(); focusNav(1); return; }
+    if (CFG.focusarrows !== false && e.key === 'ArrowLeft') { e.preventDefault(); focusNav(-1); return; }
+  }
+  if (e.altKey && e.key === 'Enter') { e.preventDefault(); openPin(doCheck); }
+  if (e.altKey && e.code === 'KeyB') { e.preventDefault(); showCfm('Reset Answers', 'Reset all answers?', resetAll); }
+  if (e.altKey && e.code === 'KeyN') { e.preventDefault(); showCfm('New Questions', 'Generate new questions? All answers will be lost.', genAll); }
+  if (e.altKey && e.code === 'KeyA') { e.preventDefault(); openPin(openAdm); }
+  if (e.altKey && e.code === 'KeyF') { e.preventDefault(); if (focusIdx < 0) openFocus(0); else { restoreInputsToGrid(focusIdx); closeFocus(); } }
 });
 
 // ── Prevent accidental close ──
