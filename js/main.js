@@ -137,6 +137,7 @@ function updTimer(left) {
   if (left<=60)  { box.classList.add('danger');  pill.classList.add('danger');  }
   else if (left<=300) { box.classList.add('warning'); pill.classList.add('warning'); }
 }
+function stopTimer() { timerRunId++; }
 function startTimer() {
   var runId = ++timerRunId;
   TTOTAL=CFG.timer*60; timedOut=false; timerEnd=Date.now()+TTOTAL*1000;

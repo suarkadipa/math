@@ -371,7 +371,7 @@ function doCheck() {
   }
   runCheck();
 }
-function runCheck() {
+function runCheck() { if (typeof stopTimer === "function") stopTimer();
   isChecking = true;
   if (timedOut) allQ.forEach(q=>{q.inp.disabled=false;q.inp.style.cursor='';});
   chkCount++; cheatChk++; if(cheatChk>1) updCheat();
