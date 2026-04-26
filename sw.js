@@ -1,12 +1,11 @@
 'use strict';
 
-importScripts('./js/version.js');
-
+const APP_VERSION = 'v1.4.10';
 const CACHE_NAME = 'math-practice-' + APP_VERSION;
 
 const PRECACHE_URLS = [
   './index.html',
-  './js/version.js',
+  './js/updates.js',
   './style.css',
   './manifest.json',
   './js/config.js',
@@ -22,41 +21,41 @@ const PRECACHE_URLS = [
   './icons/apple-touch-icon.png'
 ];
 
-self.addEventListener('install', function(event) {
+self.addEventListener('install', function (event) {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(function(cache) { return cache.addAll(PRECACHE_URLS); })
-      .then(function() { return self.skipWaiting(); })
+      .then(function (cache) { return cache.addAll(PRECACHE_URLS); })
+      .then(function () { return self.skipWaiting(); })
   );
 });
 
-self.addEventListener('activate', function(event) {
+self.addEventListener('activate', function (event) {
   event.waitUntil(
     caches.keys()
-      .then(function(keys) {
+      .then(function (keys) {
         return Promise.all(
-          keys.filter(function(k) { return k !== CACHE_NAME; })
-              .map(function(k) { return caches.delete(k); })
+          keys.filter(function (k) { return k !== CACHE_NAME; })
+            .map(function (k) { return caches.delete(k); })
         );
       })
-      .then(function() { return self.clients.claim(); })
+      .then(function () { return self.clients.claim(); })
   );
 });
 
-self.addEventListener('fetch', function(event) {
+self.addEventListener('fetch', function (event) {
   if (event.request.method !== 'GET') return;
 
   // Pass external requests (Google Fonts, etc.) straight to network
   if (new URL(event.request.url).origin !== self.location.origin) return;
 
   event.respondWith(
-    caches.match(event.request).then(function(cached) {
+    caches.match(event.request).then(function (cached) {
       if (cached) return cached;
 
-      return fetch(event.request).then(function(response) {
+      return fetch(event.request).then(function (response) {
         if (response && response.status === 200 && response.type === 'basic') {
           var clone = response.clone();
-          caches.open(CACHE_NAME).then(function(cache) {
+          caches.open(CACHE_NAME).then(function (cache) {
             cache.put(event.request, clone);
           });
         }
