@@ -1,6 +1,6 @@
 'use strict';
 
-const APP_VERSION = 'v1.4.11';
+const APP_VERSION = 'v1.4.12';
 const CACHE_NAME = 'math-practice-' + APP_VERSION;
 
 const PRECACHE_URLS = [
