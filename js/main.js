@@ -2,6 +2,7 @@
 
 
 var timerRunId = 0;
+var timerTickInterval = null;
 
 function toggleSplashAchievements(forceOpen) {
   var wrap = g('readyAchWrap');
@@ -146,18 +147,38 @@ function updTimer(left) {
   if (left<=60)  { box.classList.add('danger');  pill.classList.add('danger');  }
   else if (left<=300) { box.classList.add('warning'); pill.classList.add('warning'); }
 }
-function stopTimer() { timerRunId++; }
+function stopTimer() {
+  timerRunId++;
+  if (timerTickInterval) {
+    clearInterval(timerTickInterval);
+    timerTickInterval = null;
+  }
+  var box = g('tbox');
+  var pill = g('fpill');
+  if (box) box.classList.remove('danger', 'warning');
+  if (pill) pill.classList.remove('danger', 'warning');
+}
 function startTimer() {
+  if (timerTickInterval) {
+    clearInterval(timerTickInterval);
+    timerTickInterval = null;
+  }
   var runId = ++timerRunId;
   TTOTAL=CFG.timer*60; timedOut=false; timerEnd=Date.now()+TTOTAL*1000;
-  var warnPlayed=false, dangerPlayed=false, tickIv=null;
+  var warnPlayed=false, dangerPlayed=false;
   function tick() {
     if (runId !== timerRunId) return;
     var left = Math.max(0, Math.round((timerEnd-Date.now())/1000));
     updTimer(left);
     if (left<=300&&left>60&&!warnPlayed) { warnPlayed=true; SFX.tick(false); }
-    if (left<=60&&!dangerPlayed)         { dangerPlayed=true; tickIv=setInterval(()=>SFX.tick(true),1000); }
-    if (left>0) setTimeout(tick,500); else { if(tickIv)clearInterval(tickIv); onTimeUp(runId); }
+    if (left<=60&&!dangerPlayed)         { dangerPlayed=true; timerTickInterval=setInterval(()=>SFX.tick(true),1000); }
+    if (left>0) setTimeout(tick,500); else {
+      if (timerTickInterval) {
+        clearInterval(timerTickInterval);
+        timerTickInterval = null;
+      }
+      onTimeUp(runId);
+    }
   }
   tick();
 }
