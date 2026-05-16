@@ -68,6 +68,7 @@
     <div class="cg-sub" id="cgSub"></div>
     <div class="cg-stars" id="cgStars"></div>
     <div class="cg-score" id="cgScore"></div>
+    <div class="cg-achievement" id="cgAchievement"></div>
     <div class="cg-streak" id="cgStreak"></div>
     <button class="cg-close" onclick="g('cgOv').classList.remove('on')">Awesome! ✨</button>
   </div>
@@ -235,6 +236,17 @@
       <li>🏆 Get a perfect score for 5 stars!</li>
     </ul>
     <div class="ready-streak" id="readyStreak"></div>
+    <div class="ready-ach-wrap collapsed" id="readyAchWrap">
+      <button class="ready-ach-head" id="readyAchHead" onclick="toggleSplashAchievements()" aria-expanded="false">
+        <span class="ready-ach-title">🏅 Achievements</span>
+        <span class="ready-ach-chevron" id="readyAchChevron">▾</span>
+      </button>
+      <div class="ready-ach-body" id="readyAchBody">
+        <div class="ready-ach-next" id="readyAchNext"></div>
+        <div class="ready-ach-grid" id="readyAchGrid"></div>
+        <div class="ready-ach-last" id="readyAchLast"></div>
+      </div>
+    </div>
     <div class="ready-streak" id="readyCooldown" style="display:none"></div>
     <div style="margin-top:4px">
       <button id="readyStartBtn" onclick="startTest()" style="background:#fff;color:#764ba2;border:none;border-radius:50px;padding:16px 52px;font-size:1.25rem;font-family:'Nunito',sans-serif;font-weight:900;cursor:pointer;box-shadow:0 6px 24px rgba(0,0,0,.2);animation:btnPulse 1.8s infinite">🚀 Let's Go!</button>
@@ -271,6 +283,9 @@
 </div>
 <div id="headerStreak" class="ready-cd" style="display:none;margin:10px auto;max-width:600px;font-size:.85rem;padding:8px 16px;text-align:center"></div>
 <div class="result-badge" id="resultBadge"><div class="result-badge-inner"><span class="rb-score" id="rbScore"></span></div></div>
+<div class="result-badge" id="attemptBadge" style="display:none">
+  <div class="result-badge-inner"><span class="rb-score" id="attemptTxt"></span></div>
+</div>
 <div class="streak-bar" id="streakBar"></div>
 <div class="timer-bar">
   <div class="timer-box" id="tbox">

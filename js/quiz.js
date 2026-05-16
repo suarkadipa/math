@@ -244,6 +244,90 @@ function updCheat() {
   if (parts.length) { b.style.display = 'block'; b.textContent = parts.join(' · '); }
 }
 
+function getAttemptAchievement(attempts) {
+  if (attempts <= 1) return '🏆 First Try Hero';
+  if (attempts === 2) return '🥈 Second Try Champ';
+  if (attempts === 3) return '🥉 Third Try Fighter';
+  if (attempts === 4) return '💪 Never Give Up Star';
+  if (attempts === 5) return '🚀 Persistence Rocket';
+  return '🔥 Comeback Legend';
+}
+
+function getAchievementByAttempt(attempts) {
+  for (var i = 0; i < ACHIEVEMENTS.length; i++) {
+    var a = ACHIEVEMENTS[i];
+    if (attempts >= a.minAttempt && attempts <= a.maxAttempt) return a;
+  }
+  return ACHIEVEMENTS[ACHIEVEMENTS.length - 1];
+}
+
+function renderSplashAchievements() {
+  var grid = g('readyAchGrid');
+  var nextEl = g('readyAchNext');
+  var lastEl = g('readyAchLast');
+  if (!grid || !nextEl || !lastEl) return;
+
+  grid.innerHTML = '';
+  var nextLocked = null;
+  var unlockedCount = 0;
+  ACHIEVEMENTS.forEach(function(a) {
+    var on = !!ACH.unlocked[a.id];
+    if (on) unlockedCount++;
+    else if (!nextLocked) nextLocked = a;
+    var item = document.createElement('div');
+    item.className = 'ready-ach-item ' + (on ? 'on' : 'off');
+    item.innerHTML = a.emoji + ' ' + a.name + '<br><span style="font-weight:700;opacity:.9">' + (on ? 'Unlocked' : a.rule) + '</span>';
+    grid.appendChild(item);
+  });
+
+  if (nextLocked) nextEl.textContent = 'Current mission: ' + nextLocked.emoji + ' ' + nextLocked.name + ' (' + nextLocked.rule + ')';
+  else nextEl.textContent = 'Amazing! All achievements unlocked. 🌟';
+
+  if (ACH.history.length > 0) {
+    var h = ACH.history[0];
+    lastEl.textContent = 'Latest: ' + h.emoji + ' ' + h.name + ' · ' + h.when + ' · Total pass: ' + (ACH.passChecks || 0);
+  } else {
+    lastEl.textContent = 'Latest: no achievement yet. Let\'s get your first trophy! · Total pass: 0';
+  }
+}
+
+function unlockAchievement() {
+  ACH.passChecks = (ACH.passChecks || 0) + 1;
+  var a = getAchievementByAttempt(ACH.passChecks);
+  var wasUnlocked = !!ACH.unlocked[a.id];
+  ACH.unlocked[a.id] = true;
+  ACH.history.unshift({
+    id: a.id,
+    emoji: a.emoji,
+    name: a.name,
+    when: new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit' })
+  });
+  ACH.history = ACH.history.slice(0, 20);
+  saveAchievementState();
+  renderSplashAchievements();
+  return { achievement: a, isNew: !wasUnlocked, passChecks: ACH.passChecks };
+}
+
+function setAchievementBadge(attempts) {
+  var ach = g('cgAchievement');
+  if (!ach) return;
+  var u = unlockAchievement();
+  ach.textContent = (u.isNew ? 'NEW! ' : 'Achievement: ') + u.achievement.emoji + ' ' + u.achievement.name + ' · Cleared in ' + attempts + ' check' + (attempts > 1 ? 's' : '') + ' · Total pass ' + u.passChecks;
+}
+
+function setAttemptBadge(attempts) {
+  var wrap = g('attemptBadge');
+  var txt = g('attemptTxt');
+  if (!wrap || !txt) return;
+  txt.textContent = '🏅 ' + getAttemptAchievement(attempts) + ' · Attempt ' + attempts;
+  wrap.style.display = 'block';
+  wrap.classList.remove('show-up');
+  void wrap.offsetWidth;
+  wrap.classList.add('show-up');
+  setTimeout(function() { wrap.classList.remove('show-up'); }, 900);
+  wrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
 // ════════════════════════════════════
 // CONFETTI
 // ════════════════════════════════════
@@ -345,6 +429,7 @@ function resetAll() {
   reviewedCols=new Set(); updRevProg();
   g('streakBar').style.display='none';
   g('resultBadge').style.display='none'; g('rbScore').textContent='';
+  g('attemptBadge').style.display='none'; g('attemptTxt').textContent='';
   g('chkCtr').style.display='none'; updStars(1,1);
   if (focusIdx>=0) syncFocusReview();
 }
@@ -393,16 +478,19 @@ function runCheck() { if (typeof stopTimer === "function") stopTimer();
   var sc = total>0 ? Math.round(correct/total*100) : 0;
   g('rbScore').textContent='🏆 '+correct+' / '+total+' — Score: '+sc;
   g('resultBadge').style.display='block';
+  setAttemptBadge(chkCount);
   updStars(wrong.length, total);
   if (total>0 && wrong.length===0) {
     if (!sessionPassed) { sessionPassed=true; updStreak(true); if (typeof onSessionPassed === 'function') onSessionPassed(); }
     SFX.fanfare(); g('cgTitle').textContent='Perfect Score!'; g('cgSub').textContent='Congratulations, '+CFG.name+'! '+randMsg(PASS_MSGS,CFG.passmsg);
     g('cgStars').textContent='⭐⭐⭐⭐⭐'; g('cgScore').textContent='✅ '+correct+' / '+total+' — Score: 100';
+    setAchievementBadge(chkCount);
     g('cgOv').classList.add('on'); launchConfetti();
   } else if (wrong.length>0 && wrong.length<=CFG.pass) {
     if (!sessionPassed) { sessionPassed=true; updStreak(true); if (typeof onSessionPassed === 'function') onSessionPassed(); }
     SFX.fanfare(); g('cgTitle').textContent='Well Done, '+CFG.name+'!'; g('cgSub').textContent=randMsg(PASS_MSGS,CFG.passmsg);
     g('cgStars').textContent='⭐⭐⭐⭐'; g('cgScore').textContent='✅ '+correct+' / '+total+' — Score: '+sc;
+    setAchievementBadge(chkCount);
     g('cgOv').classList.add('on'); launchConfetti();
   } else if (wrong.length>0) {
     if(!sessionPassed) updStreak(false);

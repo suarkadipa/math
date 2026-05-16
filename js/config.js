@@ -64,6 +64,37 @@ var TTOTAL       = CFG.timer * 60;
 var streak        = parseInt(localStorage.getItem('streak') || '0');
 var longestStreak = parseInt(localStorage.getItem('longestStreak') || '0');
 
+const ACHIEVEMENTS = [
+  { id: 'a1', emoji: '🏆', name: 'First Win Hero', rule: 'Total pass count: 1', minAttempt: 1, maxAttempt: 1 },
+  { id: 'a2', emoji: '🥈', name: 'Second Win Champ', rule: 'Total pass count: 2', minAttempt: 2, maxAttempt: 2 },
+  { id: 'a3', emoji: '🥉', name: 'Third Win Fighter', rule: 'Total pass count: 3', minAttempt: 3, maxAttempt: 3 },
+  { id: 'a4', emoji: '💪', name: 'Never Give Up Star', rule: 'Total pass count: 4', minAttempt: 4, maxAttempt: 4 },
+  { id: 'a5', emoji: '🚀', name: 'Persistence Rocket', rule: 'Total pass count: 5', minAttempt: 5, maxAttempt: 5 },
+  { id: 'a6', emoji: '🔥', name: 'Comeback Legend', rule: 'Total pass count: 6+', minAttempt: 6, maxAttempt: 999 }
+];
+
+const ACH_KEY = 'mcAchievementState';
+function loadAchievementState() {
+  try {
+    var s = JSON.parse(localStorage.getItem(ACH_KEY) || '{}');
+    var unlocked = s.unlocked || {};
+    var passChecks = Math.max(0, parseInt(s.passChecks) || 0);
+    if (passChecks === 0) {
+      var unlockedCount = Object.keys(unlocked).length;
+      if (unlockedCount > 0) passChecks = unlockedCount;
+    }
+    return {
+      unlocked: unlocked,
+      history: Array.isArray(s.history) ? s.history.slice(0, 20) : [],
+      passChecks: passChecks
+    };
+  } catch (e) {
+    return { unlocked: {}, history: [], passChecks: 0 };
+  }
+}
+function saveAchievementState() { localStorage.setItem(ACH_KEY, JSON.stringify(ACH)); }
+var ACH = loadAchievementState();
+
 // ── Helpers ──
 const g   = id => document.getElementById(id);
 const fmt = n  => Number(n).toLocaleString('en-US');

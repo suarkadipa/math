@@ -3,6 +3,15 @@
 
 var timerRunId = 0;
 
+function toggleSplashAchievements(forceOpen) {
+  var wrap = g('readyAchWrap');
+  var head = g('readyAchHead');
+  if (!wrap) return;
+  var shouldOpen = typeof forceOpen === 'boolean' ? forceOpen : wrap.classList.contains('collapsed');
+  wrap.classList.toggle('collapsed', !shouldOpen);
+  if (head) head.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+}
+
 function cooldownMsLeft() {
   if (CD.cooldownStartedAt && CD.cooldownUntil > 0) {
     var days = Math.max(1, parseInt(CFG.cooldowndays) || DEF.cooldowndays);
@@ -251,6 +260,8 @@ if (streak > 0)          rs.innerHTML = '🔥 Current streak: <strong>'+streak+'
 else if (longestStreak>0) rs.innerHTML = '🏅 Best streak: <strong>'+longestStreak+'</strong> — can you beat it?';
 else                       rs.innerHTML = '🌟 No streak yet — go for it!';
 
+if (typeof renderSplashAchievements === 'function') renderSplashAchievements();
+toggleSplashAchievements(false);
 refreshCooldownUI();
 initSplashAnim();
 genAll();
