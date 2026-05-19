@@ -319,7 +319,8 @@ function setAttemptBadge(attempts) {
   var wrap = g('attemptBadge');
   var txt = g('attemptTxt');
   if (!wrap || !txt) return;
-  txt.textContent = '🏅 ' + getAttemptAchievement(attempts) + ' · Attempt ' + attempts;
+  var currentAch = getAchievementByAttempt(ACH.passChecks);
+  txt.textContent = '🏅 ' + currentAch.emoji + ' ' + currentAch.name + ' · Attempt ' + attempts;
   wrap.style.display = 'block';
   wrap.classList.remove('show-up');
   void wrap.offsetWidth;
@@ -478,19 +479,20 @@ function runCheck() { if (typeof stopTimer === "function") stopTimer();
   var sc = total>0 ? Math.round(correct/total*100) : 0;
   g('rbScore').textContent='🏆 '+correct+' / '+total+' — Score: '+sc;
   g('resultBadge').style.display='block';
-  setAttemptBadge(chkCount);
   updStars(wrong.length, total);
   if (total>0 && wrong.length===0) {
     if (!sessionPassed) { sessionPassed=true; updStreak(true); if (typeof onSessionPassed === 'function') onSessionPassed(); }
     SFX.fanfare(); g('cgTitle').textContent='Perfect Score!'; g('cgSub').textContent='Congratulations, '+CFG.name+'! '+randMsg(PASS_MSGS,CFG.passmsg);
     g('cgStars').textContent='⭐⭐⭐⭐⭐'; g('cgScore').textContent='✅ '+correct+' / '+total+' — Score: 100';
     setAchievementBadge(chkCount);
+    setAttemptBadge(chkCount);
     g('cgOv').classList.add('on'); launchConfetti();
   } else if (wrong.length>0 && wrong.length<=CFG.pass) {
     if (!sessionPassed) { sessionPassed=true; updStreak(true); if (typeof onSessionPassed === 'function') onSessionPassed(); }
     SFX.fanfare(); g('cgTitle').textContent='Well Done, '+CFG.name+'!'; g('cgSub').textContent=randMsg(PASS_MSGS,CFG.passmsg);
     g('cgStars').textContent='⭐⭐⭐⭐'; g('cgScore').textContent='✅ '+correct+' / '+total+' — Score: '+sc;
     setAchievementBadge(chkCount);
+    setAttemptBadge(chkCount);
     g('cgOv').classList.add('on'); launchConfetti();
   } else if (wrong.length>0) {
     if(!sessionPassed) updStreak(false);
@@ -498,6 +500,7 @@ function runCheck() { if (typeof stopTimer === "function") stopTimer();
       sessionFailRecorded = true;
       if (typeof onSessionFailed === 'function') onSessionFailed();
     }
+    g('attemptBadge').style.display='none';
     showWrong(wrong);
   }
   isChecking = false;
