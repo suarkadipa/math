@@ -283,7 +283,7 @@ h1{font-size:2rem;font-weight:900;color:var(--pri);margin-bottom:4px}
 [data-theme="dark"] .ready-ov,[data-theme="dark-blue"] .ready-ov,[data-theme="dark-green"] .ready-ov,
 [data-theme="dark-purple"] .ready-ov,[data-theme="dark-red"] .ready-ov,[data-theme="dark-orange"] .ready-ov,
 [data-theme="dark-yellow"] .ready-ov,[data-theme="dark-pink"] .ready-ov,[data-theme="dark-cyan"] .ready-ov{background:linear-gradient(135deg,#1a1d2e 0%,#252840 50%,#3d2b6b 100%)}
-.ready-box{text-align:center;padding:40px 48px;animation:popIn .6s cubic-bezier(.175,.885,.32,1.275);position:relative;z-index:2}
+.ready-box{text-align:center;padding:40px 48px;animation:popIn .6s cubic-bezier(.175,.885,.32,1.275);position:relative;z-index:2;max-height:calc(100vh - 40px);overflow-y:auto}
 .ready-emoji-wrap{position:relative;display:inline-block;margin-bottom:12px}
 .sparkle{position:absolute;font-size:1rem;animation:orbitSpark 3s linear infinite}
 .sparkle:nth-child(2){animation-delay:-1s}.sparkle:nth-child(3){animation-delay:-2s}
@@ -297,7 +297,7 @@ h1{font-size:2rem;font-weight:900;color:var(--pri);margin-bottom:4px}
 .ready-ach-head{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;background:transparent;border:none;padding:0;cursor:pointer}
 .ready-ach-title{color:#fff;font-size:.9rem;font-weight:900;text-align:left}
 .ready-ach-chevron{color:#fff;font-weight:900;font-size:1.05rem;transition:transform .25s ease}
-.ready-ach-body{overflow-y:auto;max-height:540px;opacity:1;transform:translateY(0);transition:max-height .3s ease,opacity .22s ease,transform .22s ease;margin-top:8px}
+.ready-ach-body{overflow-y:auto;max-height:min(42vh,360px);opacity:1;transform:translateY(0);transition:max-height .3s ease,opacity .22s ease,transform .22s ease;margin-top:8px;padding-right:4px}
 .ready-ach-wrap.collapsed .ready-ach-body{max-height:0;opacity:0;transform:translateY(-4px);margin-top:0;overflow:hidden}
 .ready-ach-wrap.collapsed .ready-ach-chevron{transform:rotate(-90deg)}
 .ready-ach-next{color:rgba(255,255,255,.92);font-size:.8rem;font-weight:700;text-align:left;margin-bottom:8px}
@@ -352,11 +352,12 @@ h1{font-size:2rem;font-weight:900;color:var(--pri);margin-bottom:4px}
   .wm { width: 100%; max-width: 100%; border-radius: 20px 20px 0 0; max-height: 88vh; }
 
   /* Splash screen */
-  .ready-box { padding: 28px 16px 24px; }
+  .ready-box { padding: 28px 16px 24px; max-height:100dvh; }
   .ready-title { font-size: 1.9rem; }
   .ready-rules { padding: 12px 14px; margin: 12px 0; }
   .ready-rules li { font-size: .82rem; }
   .ready-ach-grid { grid-template-columns: 1fr; }
+  .ready-ach-body { max-height: min(36vh, 280px); }
 }
 
 /* ── Animations ── */
