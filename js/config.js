@@ -65,12 +65,22 @@ var streak        = parseInt(localStorage.getItem('streak') || '0');
 var longestStreak = parseInt(localStorage.getItem('longestStreak') || '0');
 
 const ACHIEVEMENTS = [
-  { id: 'a1', emoji: '🏆', name: 'First Win Hero', rule: 'Total pass count: 1', minAttempt: 1, maxAttempt: 1 },
-  { id: 'a2', emoji: '🥈', name: 'Second Win Champ', rule: 'Total pass count: 2', minAttempt: 2, maxAttempt: 2 },
-  { id: 'a3', emoji: '🥉', name: 'Third Win Fighter', rule: 'Total pass count: 3', minAttempt: 3, maxAttempt: 3 },
-  { id: 'a4', emoji: '💪', name: 'Never Give Up Star', rule: 'Total pass count: 4', minAttempt: 4, maxAttempt: 4 },
-  { id: 'a5', emoji: '🚀', name: 'Persistence Rocket', rule: 'Total pass count: 5', minAttempt: 5, maxAttempt: 5 },
-  { id: 'a6', emoji: '🔥', name: 'Comeback Legend', rule: 'Total pass count: 6+', minAttempt: 6, maxAttempt: 999 }
+  { id: 'a1',  emoji: '🏆', name: 'First Win Hero', rule: 'Total pass count: 1', minAttempt: 1, maxAttempt: 1 },
+  { id: 'a2',  emoji: '🥈', name: 'Second Win Champ', rule: 'Total pass count: 2', minAttempt: 2, maxAttempt: 2 },
+  { id: 'a3',  emoji: '🥉', name: 'Third Win Fighter', rule: 'Total pass count: 3', minAttempt: 3, maxAttempt: 3 },
+  { id: 'a4',  emoji: '💪', name: 'Never Give Up Star', rule: 'Total pass count: 4', minAttempt: 4, maxAttempt: 4 },
+  { id: 'a5',  emoji: '🚀', name: 'Persistence Rocket', rule: 'Total pass count: 5', minAttempt: 5, maxAttempt: 5 },
+  { id: 'a6',  emoji: '🔥', name: 'Comeback Legend', rule: 'Total pass count: 6-9', minAttempt: 6, maxAttempt: 9 },
+  { id: 'a7',  emoji: '🌟', name: 'Double Digit Star', rule: 'Total pass count: 10-14', minAttempt: 10, maxAttempt: 14 },
+  { id: 'a8',  emoji: '👑', name: 'Bronze Master', rule: 'Total pass count: 15-24', minAttempt: 15, maxAttempt: 24 },
+  { id: 'a9',  emoji: '💎', name: 'Silver Master', rule: 'Total pass count: 25-34', minAttempt: 25, maxAttempt: 34 },
+  { id: 'a10', emoji: '🔮', name: 'Gold Master', rule: 'Total pass count: 35-49', minAttempt: 35, maxAttempt: 49 },
+  { id: 'a11', emoji: '🛡️', name: 'Grand Master', rule: 'Total pass count: 50-59', minAttempt: 50, maxAttempt: 59 },
+  { id: 'a12', emoji: '⚡', name: 'Lightning Speed', rule: 'Total pass count: 60-69', minAttempt: 60, maxAttempt: 69 },
+  { id: 'a13', emoji: '🌀', name: 'Math Storm', rule: 'Total pass count: 70-79', minAttempt: 70, maxAttempt: 79 },
+  { id: 'a14', emoji: '☄️', name: 'Cosmic Genius', rule: 'Total pass count: 80-89', minAttempt: 80, maxAttempt: 89 },
+  { id: 'a15', emoji: '🌌', name: 'Galaxy Conqueror', rule: 'Total pass count: 90-99', minAttempt: 90, maxAttempt: 99 },
+  { id: 'a16', emoji: '👽', name: 'Alien Brain', rule: 'Total pass count: 100+', minAttempt: 100, maxAttempt: 99999 }
 ];
 
 const ACH_KEY = 'mcAchievementState';
@@ -83,6 +93,11 @@ function loadAchievementState() {
       var unlockedCount = Object.keys(unlocked).length;
       if (unlockedCount > 0) passChecks = unlockedCount;
     }
+    ACHIEVEMENTS.forEach(function(a) {
+      if (passChecks >= a.minAttempt) {
+        unlocked[a.id] = true;
+      }
+    });
     return {
       unlocked: unlocked,
       history: Array.isArray(s.history) ? s.history.slice(0, 20) : [],
