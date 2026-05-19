@@ -126,6 +126,7 @@ function skipToQuiz() {
   }
   closeAdm();
   g('readyOv').style.display = 'none';
+  document.body.classList.remove('splash-active');
   hasStarted = true;
   genAll();
   allQ.forEach(q => q.inp.disabled = false);
@@ -147,6 +148,7 @@ function resetCooldown() {
       ov.style.display = 'flex';
       ov.style.opacity = '1';
       ov.style.pointerEvents = 'auto';
+      document.body.classList.add('splash-active');
     }
     hasStarted = false;
     timerRunId++; // Stop any running timer

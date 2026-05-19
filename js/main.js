@@ -72,6 +72,7 @@ function refreshCooldownUI() {
       ov.style.display = 'flex';
       ov.style.opacity = '1';
       ov.style.pointerEvents = 'auto';
+      document.body.classList.add('splash-active');
       hasStarted = false;
       timerRunId++; // Stop any running timer
     }
@@ -201,7 +202,10 @@ function startTest(adminBypass) {
   hasStarted = true;
   SFX.launch();
   var ov=g('readyOv'); ov.style.transition='opacity .5s'; ov.style.opacity='0'; ov.style.pointerEvents='none';
-  setTimeout(()=>ov.style.display='none', 500);
+  setTimeout(()=>{
+    ov.style.display='none';
+    document.body.classList.remove('splash-active');
+  }, 500);
   allQ.forEach(q=>q.inp.disabled=false); startTimer();
 }
 

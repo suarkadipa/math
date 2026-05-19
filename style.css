@@ -21,6 +21,7 @@ html {
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);padding:20px;min-height:100vh;transition:background .3s,color .3s}
+body.splash-active{overflow:hidden!important}
 
 /* ── Header ── */
 .hdr{text-align:center;margin-bottom:16px;position:relative}
