@@ -5,7 +5,7 @@
 const DEF = {
   name: 'Tugus', welcome: '', timer: 23, pm: 5, digits: 7,
   bm: 3, bd: 3, pass: 2, fail: 3, passmsg: '', failmsg: '',
-  theme: 'dark', anim: -1, pin: '0436', float: true, sound: true, focusskip: true, focusarrows: false,
+  theme: 'dark', anim: -1, pin: '0436', float: true, sound: true, tts: true, focusskip: true, focusarrows: false,
   failstreaklimit: 3, cooldowndays: 2
 };
 

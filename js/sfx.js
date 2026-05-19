@@ -33,7 +33,41 @@ var SFX = (function () {
     tick:    fast => play(fast ? 800 : 500, null, 0.05, 0.15, 'square'),
     bell:    () => { play(880,null,0.4,0.3); play(659,null,0.4,0.25,null,0.45); },
     launch:  () => play(400, 800, 0.3, 0.2, 'triangle'),
-    review:  () => play(700, 900, 0.12, 0.2)
+    review:  () => play(700, 900, 0.12, 0.2),
+    speak: (title, sub) => {
+      if (CFG.tts === false) return;
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        var cleanTitle = (title || '').trim();
+        var cleanSub = (sub || '').trim();
+        if (CFG.name && cleanTitle && cleanSub) {
+          var escName = CFG.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          var nameRegex = new RegExp('\\b' + escName + '\\b', 'gi');
+          if (nameRegex.test(cleanTitle)) {
+            cleanSub = cleanSub.replace(nameRegex, '')
+                               .replace(/,\s*!/g, '!')
+                               .replace(/,\s*\./g, '.')
+                               .replace(/,\s*,/g, ',')
+                               .replace(/\s+/g, ' ')
+                               .trim();
+            cleanSub = cleanSub.replace(/^[\s,;!.\-]+/, '').trim();
+          }
+        }
+        var text = cleanTitle + '. ' + cleanSub;
+        var clean = text.replace(/[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF]/g, '')
+                        .replace(/❌/g, '')
+                        .replace(/🏆/g, '')
+                        .replace(/✅/g, '')
+                        .replace(/⭐/g, '')
+                        .trim();
+        if (clean) {
+          var u = new SpeechSynthesisUtterance(clean);
+          u.lang = 'en-US';
+          u.rate = 1.0;
+          window.speechSynthesis.speak(u);
+        }
+      }
+    }
   };
 })();
 

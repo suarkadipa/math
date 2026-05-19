@@ -398,6 +398,7 @@ function showWrong(list) {
   var fe=g('wmFail');
   if (list.length>=CFG.fail) { fe.innerHTML='❌ FAILED · '+randMsg(FAIL_MSGS,CFG.failmsg); fe.className='wm-fail'; }
   else { fe.innerHTML=''; fe.className=''; }
+  deduplicateName(g('wmTitle'), fe);
   renderWrong(Math.min(list.length,5)); g('wrongOv').classList.add('on'); SFX.open();
 }
 function renderWrong(count) {
@@ -483,17 +484,25 @@ function runCheck() { if (typeof stopTimer === "function") stopTimer();
   if (total>0 && wrong.length===0) {
     if (!sessionPassed) { sessionPassed=true; updStreak(true); if (typeof onSessionPassed === 'function') onSessionPassed(); }
     SFX.fanfare(); g('cgTitle').textContent='Perfect Score!'; g('cgSub').textContent='Congratulations, '+CFG.name+'! '+randMsg(PASS_MSGS,CFG.passmsg);
+    deduplicateName(g('cgTitle'), g('cgSub'));
     g('cgStars').textContent='⭐⭐⭐⭐⭐'; g('cgScore').textContent='✅ '+correct+' / '+total+' — Score: 100';
     setAchievementBadge(chkCount);
     setAttemptBadge(chkCount);
     g('cgOv').classList.add('on'); launchConfetti();
+    if (typeof SFX !== 'undefined' && typeof SFX.speak === 'function') {
+      SFX.speak(g('cgTitle').textContent, g('cgSub').textContent);
+    }
   } else if (wrong.length>0 && wrong.length<=CFG.pass) {
     if (!sessionPassed) { sessionPassed=true; updStreak(true); if (typeof onSessionPassed === 'function') onSessionPassed(); }
     SFX.fanfare(); g('cgTitle').textContent='Well Done, '+CFG.name+'!'; g('cgSub').textContent=randMsg(PASS_MSGS,CFG.passmsg);
+    deduplicateName(g('cgTitle'), g('cgSub'));
     g('cgStars').textContent='⭐⭐⭐⭐'; g('cgScore').textContent='✅ '+correct+' / '+total+' — Score: '+sc;
     setAchievementBadge(chkCount);
     setAttemptBadge(chkCount);
     g('cgOv').classList.add('on'); launchConfetti();
+    if (typeof SFX !== 'undefined' && typeof SFX.speak === 'function') {
+      SFX.speak(g('cgTitle').textContent, g('cgSub').textContent);
+    }
   } else if (wrong.length>0) {
     if(!sessionPassed) updStreak(false);
     if (!sessionPassed && !sessionFailRecorded && wrong.length >= CFG.fail) {
@@ -502,6 +511,9 @@ function runCheck() { if (typeof stopTimer === "function") stopTimer();
     }
     g('attemptBadge').style.display='none';
     showWrong(wrong);
+    if (typeof SFX !== 'undefined' && typeof SFX.speak === 'function') {
+      SFX.speak(g('wmTitle').textContent, g('wmFail').textContent);
+    }
   }
   isChecking = false;
 }
@@ -522,4 +534,45 @@ function testFill(mode) {
   if (mode==='all-wrong')  wi=allQ.map((_,i)=>i);
   allQ.forEach((q,i)=>{q.inp.value=fmt(wi.indexOf(i)>=0?q.ans+1:q.ans);q.inp.className='qi';q.icon.textContent='';});
   updColProg(); colData.forEach((cd,idx)=>refreshColReview(cd.cardEl,idx));
+}
+
+function deduplicateName(elTitle, elSub) {
+  var name = CFG.name;
+  if (!name) return;
+  
+  var titleText = elTitle ? elTitle.textContent : '';
+  var subText = elSub ? elSub.textContent : '';
+  
+  var escName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  var nameRegex = new RegExp('\\b' + escName + '\\b', 'gi');
+  
+  var hasInTitle = nameRegex.test(titleText);
+  
+  if (hasInTitle) {
+    if (elSub) {
+      var newSub = subText.replace(nameRegex, '')
+                           .replace(/,\s*!/g, '!')
+                           .replace(/,\s*\./g, '.')
+                           .replace(/,\s*,/g, ',')
+                           .replace(/\s+/g, ' ')
+                           .trim();
+      newSub = newSub.replace(/^[\s,;!.\-]+/, '').trim();
+      elSub.textContent = newSub;
+    }
+  } else {
+    if (elSub) {
+      var count = 0;
+      var newSub = subText.replace(nameRegex, function(match) {
+        count++;
+        return count === 1 ? match : '';
+      });
+      newSub = newSub.replace(/,\s*!/g, '!')
+                     .replace(/,\s*\./g, '.')
+                     .replace(/,\s*,/g, ',')
+                     .replace(/\s+/g, ' ')
+                     .trim();
+      newSub = newSub.replace(/^[\s,;!.\-]+/, '').trim();
+      elSub.textContent = newSub;
+    }
+  }
 }
