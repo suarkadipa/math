@@ -166,13 +166,25 @@ function startTimer() {
   }
   var runId = ++timerRunId;
   TTOTAL=CFG.timer*60; timedOut=false; timerEnd=Date.now()+TTOTAL*1000;
-  var warnPlayed=false, dangerPlayed=false;
+  var lastTickSecond = -1;
   function tick() {
     if (runId !== timerRunId) return;
     var left = Math.max(0, Math.round((timerEnd-Date.now())/1000));
     updTimer(left);
-    if (left<=300&&left>60&&!warnPlayed) { warnPlayed=true; SFX.tick(false); }
-    if (left<=60&&!dangerPlayed)         { dangerPlayed=true; timerTickInterval=setInterval(()=>SFX.tick(true),1000); }
+    if (left !== lastTickSecond) {
+      lastTickSecond = left;
+      if (left <= 60 && left > 0) {
+        SFX.tick(true);
+      } else if (left <= 120 && left > 60) {
+        if ((120 - left) % 2 === 0) SFX.tick(false);
+      } else if (left <= 180 && left > 120) {
+        if ((180 - left) % 6 === 0) SFX.tick(false);
+      } else if (left <= 240 && left > 180) {
+        if ((240 - left) % 12 === 0) SFX.tick(false);
+      } else if (left <= 300 && left > 240) {
+        if ((300 - left) % 24 === 0) SFX.tick(false);
+      }
+    }
     if (left>0) setTimeout(tick,500); else {
       if (timerTickInterval) {
         clearInterval(timerTickInterval);
