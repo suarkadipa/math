@@ -94,6 +94,38 @@ function renderGrid(cols) {
             }
           }
         }
+        if (e.key === 'Tab') {
+          if (document.getElementById('focusBackdrop').classList.contains('on')) return;
+          var qState = allQ.find(function(q) { return q.inp === inp; });
+          if (!qState) return;
+
+          var colInputs = allQ
+            .filter(function(q) { return q.colIdx === qState.colIdx; })
+            .map(function(q) { return q.inp; });
+          var isBottomInput = colInputs.length > 0 && colInputs[colInputs.length - 1] === inp;
+          var isTopInput = colInputs.length > 0 && colInputs[0] === inp;
+          if (!e.shiftKey && !isBottomInput) return;
+          if (e.shiftKey && !isTopInput) return;
+
+          e.preventDefault();
+          if (document.getElementById('focusBackdrop').classList.contains('on')) {
+            focusNav(e.shiftKey ? -1 : 1);
+            return;
+          }
+
+          var cards = Array.from(document.querySelectorAll('#grid .col-card'));
+          var currentCard = colData[qState.colIdx] ? colData[qState.colIdx].cardEl : null;
+          var cardIdx = cards.indexOf(currentCard);
+          if (cardIdx < 0 || cards.length < 2) return;
+
+          var targetCard = e.shiftKey
+            ? cards[(cardIdx - 1 + cards.length) % cards.length]
+            : cards[(cardIdx + 1) % cards.length];
+          var targetInputs = Array.from(targetCard.querySelectorAll('.qi:not(:disabled)'));
+          if (!targetInputs.length) return;
+          var targetInput = e.shiftKey ? targetInputs[targetInputs.length - 1] : targetInputs[0];
+          targetInput.focus();
+        }
       });
       inp.addEventListener('input', (function(c, idx) {
         return function() {

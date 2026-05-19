@@ -266,6 +266,17 @@ document.addEventListener('keydown', e => {
 
   // Quiz active shortcuts
   if (g('focusBackdrop').classList.contains('on')) {
+    if (e.defaultPrevented) return;
+    if (e.key === 'Tab') {
+      var activeEl = document.activeElement;
+      var isQi = activeEl && activeEl.classList && activeEl.classList.contains('qi');
+      if (isQi) {
+        var focusInputs = Array.from(g('focusBody').querySelectorAll('.qi:not(:disabled)'));
+        var idx = focusInputs.indexOf(activeEl);
+        if (!e.shiftKey && idx === focusInputs.length - 1) { e.preventDefault(); focusNav(1); return; }
+        if (e.shiftKey && idx === 0) { e.preventDefault(); focusNav(-1); return; }
+      }
+    }
     if (e.key === 'Escape') { restoreInputsToGrid(focusIdx); closeFocus(); return; }
     if (CFG.focusarrows !== false && e.key === 'ArrowRight') { e.preventDefault(); focusNav(1); return; }
     if (CFG.focusarrows !== false && e.key === 'ArrowLeft') { e.preventDefault(); focusNav(-1); return; }
