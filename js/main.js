@@ -270,12 +270,37 @@ document.addEventListener('keydown', e => {
     if (e.key === 'Tab') {
       var activeEl = document.activeElement;
       var isQi = activeEl && activeEl.classList && activeEl.classList.contains('qi');
+      var isRev = activeEl && activeEl.id === 'focusReview';
       if (isQi) {
         var focusInputs = Array.from(g('focusBody').querySelectorAll('.qi:not(:disabled)'));
         var idx = focusInputs.indexOf(activeEl);
-        if (!e.shiftKey && idx === focusInputs.length - 1) { e.preventDefault(); focusNav(1); return; }
+        if (!e.shiftKey && idx === focusInputs.length - 1) { e.preventDefault(); g('focusReview').focus(); return; }
         if (e.shiftKey && idx === 0) { e.preventDefault(); focusNav(-1); return; }
       }
+      if (isRev) {
+        if (!e.shiftKey) { e.preventDefault(); focusNav(1); return; }
+        else {
+          e.preventDefault();
+          var focusInputs = Array.from(g('focusBody').querySelectorAll('.qi:not(:disabled)'));
+          if (focusInputs.length) focusInputs[focusInputs.length - 1].focus();
+          return;
+        }
+      }
+    }
+    if (e.key === ' ' && document.activeElement && document.activeElement.id === 'focusReview') {
+      e.preventDefault();
+      var focusRev = g('focusReview');
+      if (focusIdx >= 0 && focusRev.classList.contains('ready')) {
+        var capturedIdx = focusIdx;
+        var gridRev = colData[capturedIdx].cardEl.querySelector('.col-review');
+        if (gridRev) { gridRev.classList.add('ready'); toggleReview(capturedIdx, gridRev); }
+        setTimeout(function() {
+          var next = findNextUnreviewed(capturedIdx, 1);
+          if (next === -1) showCfm('All columns reviewed! 🎉', 'Ready to check your answers?', function() { openPin(doCheck); });
+          else focusNav(1);
+        }, 400);
+      }
+      return;
     }
     if (e.key === 'Escape') { restoreInputsToGrid(focusIdx); closeFocus(); return; }
     if (CFG.focusarrows !== false && e.key === 'ArrowRight') { e.preventDefault(); focusNav(1); return; }

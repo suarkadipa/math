@@ -80,6 +80,8 @@ function syncFocusReview() {
   var isReviewed = reviewedCols.has(focusIdx);
   var colQs = allQ.filter(function(q) { return q.colIdx === focusIdx; });
   var isFull = colQs.length > 0 && colQs.every(function(q) { return q.inp.value.trim() !== ''; });
+  var gridRev = cd.cardEl.querySelector('.col-review');
+  if (gridRev) gridRev.classList.toggle('ready', isFull);
   var rev = g('focusReview');
   var box = g('focusRevBox');
   var lbl = g('focusRevLbl');
@@ -88,19 +90,18 @@ function syncFocusReview() {
   box.textContent = isReviewed ? '✓' : '';
   lbl.textContent = isReviewed ? 'Reviewed ✓' : "I've reviewed all answers in this column";
   if (rev._listener) rev.removeEventListener('click', rev._listener);
-  rev._listener = (function(idx) {
+  rev._listener = (function(idx, revEl) {
     return function() {
+      if (!revEl.classList.contains('ready')) return;
       var gridRev = colData[idx].cardEl.querySelector('.col-review');
-      if (gridRev) toggleReview(idx, gridRev);
-      if (CFG.focusskip !== false) {
-        setTimeout(() => {
-          var next = findNextUnreviewed(idx, 1);
-          if (next === -1) showCfm('All columns reviewed! 🎉','Ready to check your answers?', () => openPin(doCheck));
-          else focusNav(1);
-        }, 400);
-      }
+      if (gridRev) { gridRev.classList.add('ready'); toggleReview(idx, gridRev); }
+      setTimeout(() => {
+        var next = findNextUnreviewed(idx, 1);
+        if (next === -1) showCfm('All columns reviewed! 🎉','Ready to check your answers?', () => openPin(doCheck));
+        else focusNav(1);
+      }, 400);
     };
-  })(focusIdx);
+  })(focusIdx, rev);
   rev.addEventListener('click', rev._listener);
   updFocusDots(focusIdx);
 }
