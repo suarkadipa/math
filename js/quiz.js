@@ -82,50 +82,58 @@ function renderGrid(cols) {
       inp.type = 'text'; inp.className = 'qi'; inp.placeholder = '?'; inp.disabled = !hasStarted;
       inp.inputMode = 'numeric';
       inp.addEventListener('keydown', function(e) {
-        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-          e.preventDefault();
-          var container = document.getElementById('focusBackdrop').classList.contains('on') ? document.getElementById('focusBody') : document.getElementById('grid');
-          var inputs = Array.from(container.querySelectorAll('.qi:not(:disabled)'));
-          var idx = inputs.indexOf(inp);
-          if (idx > -1) {
-            var nextIdx = e.key === 'ArrowDown' ? idx + 1 : idx - 1;
-            if (nextIdx >= 0 && nextIdx < inputs.length) {
-              inputs[nextIdx].focus();
-            }
-          }
-        }
-        if (e.key === 'Tab') {
-          if (document.getElementById('focusBackdrop').classList.contains('on')) return;
-          var qState = allQ.find(function(q) { return q.inp === inp; });
-          if (!qState) return;
+        var isFocusMode = document.getElementById('focusBackdrop').classList.contains('on');
+        var isArrow = e.key === 'ArrowDown' || e.key === 'ArrowUp';
+        var isTab = e.key === 'Tab';
+        if (!isArrow && !isTab) return;
 
-          var colInputs = allQ
-            .filter(function(q) { return q.colIdx === qState.colIdx; })
-            .map(function(q) { return q.inp; });
-          var isBottomInput = colInputs.length > 0 && colInputs[colInputs.length - 1] === inp;
-          var isTopInput = colInputs.length > 0 && colInputs[0] === inp;
-          if (!e.shiftKey && !isBottomInput) return;
-          if (e.shiftKey && !isTopInput) return;
+        // In focus mode, global shortcut handler owns Tab-flow behavior.
+        if (isFocusMode) return;
 
-          e.preventDefault();
-          if (document.getElementById('focusBackdrop').classList.contains('on')) {
-            focusNav(e.shiftKey ? -1 : 1);
+        var qState = allQ.find(function(q) { return q.inp === inp; });
+        if (!qState) return;
+
+        var colInputs = allQ
+          .filter(function(q) { return q.colIdx === qState.colIdx; })
+          .map(function(q) { return q.inp; });
+        var idxInCol = colInputs.indexOf(inp);
+        if (idxInCol < 0) return;
+
+        var moveDir = isArrow
+          ? (e.key === 'ArrowDown' ? 1 : -1)
+          : (e.shiftKey ? -1 : 1);
+
+        // Arrow: move inside current column first.
+        if (isArrow) {
+          var nextInCol = idxInCol + moveDir;
+          if (nextInCol >= 0 && nextInCol < colInputs.length) {
+            e.preventDefault();
+            colInputs[nextInCol].focus();
             return;
           }
-
-          var cards = Array.from(document.querySelectorAll('#grid .col-card'));
-          var currentCard = colData[qState.colIdx] ? colData[qState.colIdx].cardEl : null;
-          var cardIdx = cards.indexOf(currentCard);
-          if (cardIdx < 0 || cards.length < 2) return;
-
-          var targetCard = e.shiftKey
-            ? cards[(cardIdx - 1 + cards.length) % cards.length]
-            : cards[(cardIdx + 1) % cards.length];
-          var targetInputs = Array.from(targetCard.querySelectorAll('.qi:not(:disabled)'));
-          if (!targetInputs.length) return;
-          var targetInput = e.shiftKey ? targetInputs[targetInputs.length - 1] : targetInputs[0];
-          targetInput.focus();
         }
+
+        // Tab/Shift+Tab and Arrow at column edge: jump to prev/next column.
+        if (isTab) {
+          var isBottomInput = colInputs[colInputs.length - 1] === inp;
+          var isTopInput = colInputs[0] === inp;
+          if (moveDir > 0 && !isBottomInput) return;
+          if (moveDir < 0 && !isTopInput) return;
+        }
+
+        e.preventDefault();
+        var cards = Array.from(document.querySelectorAll('#grid .col-card'));
+        var currentCard = colData[qState.colIdx] ? colData[qState.colIdx].cardEl : null;
+        var cardIdx = cards.indexOf(currentCard);
+        if (cardIdx < 0 || cards.length < 2) return;
+
+        var targetCard = moveDir < 0
+          ? cards[(cardIdx - 1 + cards.length) % cards.length]
+          : cards[(cardIdx + 1) % cards.length];
+        var targetInputs = Array.from(targetCard.querySelectorAll('.qi:not(:disabled)'));
+        if (!targetInputs.length) return;
+        var targetInput = moveDir < 0 ? targetInputs[targetInputs.length - 1] : targetInputs[0];
+        targetInput.focus();
       });
       inp.addEventListener('input', (function(c, idx) {
         return function() {

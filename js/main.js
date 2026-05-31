@@ -3,6 +3,7 @@
 
 var timerRunId = 0;
 var timerTickInterval = null;
+var allowCloseOnce = false;
 
 function toggleSplashAchievements(forceOpen) {
   var wrap = g('readyAchWrap');
@@ -267,18 +268,29 @@ document.addEventListener('keydown', e => {
   // Quiz active shortcuts
   if (g('focusBackdrop').classList.contains('on')) {
     if (e.defaultPrevented) return;
-    if (e.key === 'Tab') {
+    var tabLikeForward = e.key === 'Tab' && !e.shiftKey || e.key === 'ArrowDown';
+    var tabLikeBackward = e.key === 'Tab' && e.shiftKey || e.key === 'ArrowUp';
+    if (tabLikeForward || tabLikeBackward) {
+      var isBack = tabLikeBackward;
       var activeEl = document.activeElement;
       var isQi = activeEl && activeEl.classList && activeEl.classList.contains('qi');
       var isRev = activeEl && activeEl.id === 'focusReview';
       if (isQi) {
         var focusInputs = Array.from(g('focusBody').querySelectorAll('.qi:not(:disabled)'));
         var idx = focusInputs.indexOf(activeEl);
-        if (!e.shiftKey && idx === focusInputs.length - 1) { e.preventDefault(); g('focusReview').focus(); return; }
-        if (e.shiftKey && idx === 0) { e.preventDefault(); focusNav(-1); return; }
+        if (e.key !== 'Tab') {
+          var nextIdx = idx + (isBack ? -1 : 1);
+          if (nextIdx >= 0 && nextIdx < focusInputs.length) {
+            e.preventDefault();
+            focusInputs[nextIdx].focus();
+            return;
+          }
+        }
+        if (!isBack && idx === focusInputs.length - 1) { e.preventDefault(); g('focusReview').focus(); return; }
+        if (isBack && idx === 0) { e.preventDefault(); focusNav(-1); return; }
       }
       if (isRev) {
-        if (!e.shiftKey) { e.preventDefault(); focusNav(1); return; }
+        if (!isBack) { e.preventDefault(); focusNav(1); return; }
         else {
           e.preventDefault();
           var focusInputs = Array.from(g('focusBody').querySelectorAll('.qi:not(:disabled)'));
@@ -318,6 +330,25 @@ document.addEventListener('keydown', e => {
 // ══════════════════════════════════════
 // INIT
 // ══════════════════════════════════════
+window.addEventListener('beforeunload', function(e) {
+  if (allowCloseOnce) return;
+  var hasAnyAnswer = Array.isArray(allQ) && allQ.some(function(q) { return q.inp && q.inp.value && q.inp.value.trim() !== ''; });
+  var shouldWarn = hasStarted || hasAnyAnswer || (g('focusBackdrop') && g('focusBackdrop').classList.contains('on'));
+  if (!shouldWarn) return;
+  e.preventDefault();
+  e.returnValue = '';
+});
+
+window.addEventListener('keydown', function(e) {
+  if ((e.ctrlKey || e.metaKey) && e.key && e.key.toLowerCase() === 'w') {
+    if (confirm('Close this app tab/window? Your current progress may be lost.')) {
+      allowCloseOnce = true;
+    } else {
+      e.preventDefault();
+    }
+  }
+});
+
 applyTheme(CFG.theme || 'dark');
 applyFloat();
 

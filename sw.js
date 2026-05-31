@@ -1,6 +1,6 @@
 'use strict';
 
-const APP_VERSION = 'v1.4.27';
+const APP_VERSION = 'v1.4.28';
 const CACHE_NAME = 'math-practice-' + APP_VERSION;
 
 const PRECACHE_URLS = [
@@ -46,8 +46,38 @@ self.addEventListener('fetch', function (event) {
   if (event.request.method !== 'GET') return;
 
   // Pass external requests (Google Fonts, etc.) straight to network
-  if (new URL(event.request.url).origin !== self.location.origin) return;
+  var reqUrl = new URL(event.request.url);
+  if (reqUrl.origin !== self.location.origin) return;
 
+  var pathname = reqUrl.pathname || '';
+  var isAppShellAsset =
+    event.request.mode === 'navigate' ||
+    pathname.endsWith('.html') ||
+    pathname.endsWith('.js') ||
+    pathname.endsWith('.css') ||
+    pathname.endsWith('.json');
+
+  if (isAppShellAsset) {
+    // Network-first so installed PWA gets fresh JS/CSS/HTML when online.
+    event.respondWith(
+      fetch(event.request)
+        .then(function (response) {
+          if (response && response.status === 200 && response.type === 'basic') {
+            var clone = response.clone();
+            caches.open(CACHE_NAME).then(function (cache) {
+              cache.put(event.request, clone);
+            });
+          }
+          return response;
+        })
+        .catch(function () {
+          return caches.match(event.request);
+        })
+    );
+    return;
+  }
+
+  // Cache-first for other same-origin assets.
   event.respondWith(
     caches.match(event.request).then(function (cached) {
       if (cached) return cached;
