@@ -330,8 +330,16 @@ document.addEventListener('keydown', e => {
 // ══════════════════════════════════════
 // INIT
 // ══════════════════════════════════════
+function quizResultVisible() {
+  var badge = g('resultBadge');
+  var score = g('rbScore');
+  if (!badge || !score) return false;
+  return badge.style.display === 'block' && score.textContent.trim() !== '';
+}
+
 window.addEventListener('beforeunload', function(e) {
   if (allowCloseOnce) return;
+  if (quizResultVisible()) return;
   var hasAnyAnswer = Array.isArray(allQ) && allQ.some(function(q) { return q.inp && q.inp.value && q.inp.value.trim() !== ''; });
   var shouldWarn = hasStarted || hasAnyAnswer || (g('focusBackdrop') && g('focusBackdrop').classList.contains('on'));
   if (!shouldWarn) return;
@@ -341,6 +349,10 @@ window.addEventListener('beforeunload', function(e) {
 
 window.addEventListener('keydown', function(e) {
   if ((e.ctrlKey || e.metaKey) && e.key && e.key.toLowerCase() === 'w') {
+    if (quizResultVisible()) {
+      allowCloseOnce = true;
+      return;
+    }
     if (confirm('Close this app tab/window? Your current progress may be lost.')) {
       allowCloseOnce = true;
     } else {
