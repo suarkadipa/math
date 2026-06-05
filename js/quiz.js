@@ -309,6 +309,7 @@ function renderSplashAchievements() {
 
   grid.innerHTML = '';
   var nextLocked = null;
+  var currentAch = getAchievementByAttempt(ACH.passChecks || 0);
   var unlockedCount = 0;
   ACHIEVEMENTS.forEach(function(a) {
     var on = !!ACH.unlocked[a.id];
@@ -316,18 +317,28 @@ function renderSplashAchievements() {
     else if (!nextLocked) nextLocked = a;
     var item = document.createElement('div');
     item.className = 'ready-ach-item ' + (on ? 'on' : 'off');
-    item.innerHTML = a.emoji + ' ' + a.name + '<br><span style="font-weight:700;opacity:.9">' + (on ? 'Unlocked' : a.rule) + '</span>';
+    var label = a.rule;
+    if (on && currentAch && currentAch.id === a.id) {
+      label = 'Total pass count: ' + (ACH.passChecks || 0);
+    } else if (on) {
+      label = 'Unlocked';
+    }
+    item.innerHTML = a.emoji + ' ' + a.name + '<br><span style="font-weight:700;opacity:.9">' + label + '</span>';
     grid.appendChild(item);
   });
 
-  if (nextLocked) nextEl.textContent = 'Current mission: ' + nextLocked.emoji + ' ' + nextLocked.name + ' (' + nextLocked.rule + ')';
-  else nextEl.textContent = 'Amazing! All achievements unlocked. 🌟';
+  if (nextLocked) {
+    nextEl.innerHTML = 'Current mission: ' + nextLocked.emoji + ' ' + nextLocked.name + ' (' + nextLocked.rule + ')' +
+      '<br><span style="font-weight:700;opacity:.9">Your total pass count: ' + (ACH.passChecks || 0) + '</span>';
+  } else {
+    nextEl.textContent = 'Amazing! All achievements unlocked. 🌟';
+  }
 
   if (ACH.history.length > 0) {
     var h = ACH.history[0];
-    lastEl.textContent = 'Latest: ' + h.emoji + ' ' + h.name + ' · ' + h.when + ' · Total pass: ' + (ACH.passChecks || 0);
+    lastEl.textContent = 'Latest: ' + h.emoji + ' ' + h.name + ' · ' + h.when + ' · Total pass count: ' + (h.passChecks || ACH.passChecks || 0);
   } else {
-    lastEl.textContent = 'Latest: no achievement yet. Let\'s get your first trophy! · Total pass: 0';
+    lastEl.textContent = 'Latest: no achievement yet. Let\'s get your first trophy! · Total pass count: 0';
   }
 }
 
@@ -340,6 +351,7 @@ function unlockAchievement() {
     id: a.id,
     emoji: a.emoji,
     name: a.name,
+    passChecks: ACH.passChecks,
     when: new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit' })
   });
   ACH.history = ACH.history.slice(0, 20);
@@ -352,7 +364,7 @@ function setAchievementBadge(attempts) {
   var ach = g('cgAchievement');
   if (!ach) return;
   var u = unlockAchievement();
-  ach.textContent = (u.isNew ? 'NEW! ' : 'Achievement: ') + u.achievement.emoji + ' ' + u.achievement.name + ' · Cleared in ' + attempts + ' check' + (attempts > 1 ? 's' : '') + ' · Total pass ' + u.passChecks;
+  ach.textContent = (u.isNew ? 'NEW! ' : 'Achievement: ') + u.achievement.emoji + ' ' + u.achievement.name + ' · Cleared in ' + attempts + ' check' + (attempts > 1 ? 's' : '') + ' · Total pass count: ' + u.passChecks;
 }
 
 function setAttemptBadge(attempts) {
