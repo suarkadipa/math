@@ -145,9 +145,19 @@ function updTimer(left) {
   g('tdisp').textContent=txt; g('fpillTxt').textContent=txt;
   g('tf').style.width=pct; g('fpillTf').style.width=pct;
   var box=g('tbox'), pill=g('fpill');
+  var focusBox = g('focusTimer');
+  var focusTxt = g('focusTdisp');
+  var focusBar = g('focusTf');
   box.classList.remove('danger','warning'); pill.classList.remove('danger','warning');
+  if (focusBox) focusBox.classList.remove('danger', 'warning');
   if (left<=60)  { box.classList.add('danger');  pill.classList.add('danger');  }
   else if (left<=300) { box.classList.add('warning'); pill.classList.add('warning'); }
+  if (focusBox) {
+    if (left<=60) focusBox.classList.add('danger');
+    else if (left<=300) focusBox.classList.add('warning');
+  }
+  if (focusTxt) focusTxt.textContent = txt;
+  if (focusBar) focusBar.style.width = pct;
 }
 function stopTimer() {
   timerRunId++;

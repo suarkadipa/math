@@ -143,6 +143,16 @@ h1{font-size:2rem;font-weight:900;color:var(--pri);margin-bottom:4px}
 .focus-close-btn:hover{background:rgba(255,255,255,.35)}
 .focus-cpw{height:5px;background:var(--border);margin:0 20px 10px;border-radius:999px;overflow:hidden;flex-shrink:0}
 .focus-cpf{height:100%;background:var(--grn);border-radius:999px;width:0%;transition:width .4s}
+.focus-timer{display:flex;align-items:center;gap:10px;margin:0 20px 12px;padding:10px 14px;border-radius:14px;background:var(--card2);box-shadow:var(--sh);flex-shrink:0}
+.focus-timer>span{font-size:1.15rem;line-height:1}
+.focus-timer>div{flex:1;min-width:0}
+.focus-timer #focusTdisp{font-size:1.25rem;font-weight:900;color:var(--text);line-height:1.1}
+.focus-tp{height:6px;background:var(--tpbg);border-radius:999px;overflow:hidden;margin-top:6px}
+.focus-tf{height:100%;background:var(--pri);border-radius:999px;width:0%;transition:width 1s linear}
+.focus-timer.warning #focusTdisp{color:var(--org)}
+.focus-timer.danger #focusTdisp{color:var(--red)}
+.focus-timer.warning .focus-tf{background:var(--org)}
+.focus-timer.danger .focus-tf{background:var(--red)}
 .focus-body{padding:16px 24px;overflow-y:auto;flex:1}
 .focus-body .qr{margin-bottom:14px}
 .focus-body .ql{font-size:var(--focus-fs,1.25rem);min-width:200px}
@@ -347,6 +357,8 @@ h1{font-size:2rem;font-weight:900;color:var(--pri);margin-bottom:4px}
   .focus-body .ql.wl { min-width: 0; flex: 1; }
   .focus-body .qi { width: 110px; font-size: 1.1rem; }
   .focus-nav-btn { padding: 10px 14px; font-size: .88rem; }
+  .focus-timer { margin: 0 12px 10px; padding: 8px 12px; }
+  .focus-timer #focusTdisp { font-size: 1.05rem; }
 
   /* Admin & Wrong answers: bottom sheet */
   #admOv, #wrongOv { align-items: flex-end; }
