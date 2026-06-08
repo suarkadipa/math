@@ -41,6 +41,7 @@ function openAdm() {
   g('as-float').classList.toggle('on', CFG.float);
   g('as-sound').classList.toggle('on', CFG.sound);
   g('as-tts').classList.toggle('on', !!CFG.tts);
+  g('as-focustimer').classList.toggle('on', CFG.focusTimer !== false);
   g('as-focusskip').classList.toggle('on', CFG.focusskip !== false);
   g('as-focusarrows').classList.toggle('on', CFG.focusarrows !== false);
   g('as-pm').value      = CFG.pm;
@@ -76,6 +77,7 @@ function saveAdm() {
   CFG.float     = g('as-float').classList.contains('on');
   CFG.sound     = g('as-sound').classList.contains('on');
   CFG.tts       = g('as-tts').classList.contains('on');
+  CFG.focusTimer = g('as-focustimer').classList.contains('on');
   CFG.focusskip = g('as-focusskip').classList.contains('on');
   CFG.focusarrows = g('as-focusarrows').classList.contains('on');
   CFG.pm        = Math.min(10, Math.max(1, parseInt(g('as-pm').value) || DEF.pm));
@@ -104,6 +106,7 @@ function saveAdm() {
   g('ruleTimer').innerHTML    = '⏱ You have <strong>'+CFG.timer+' minutes</strong> to finish';
   TTOTAL = CFG.timer * 60;
   if (typeof refreshCooldownUI === 'function') refreshCooldownUI();
+  if (typeof updateFocusTimerVisibility === 'function') updateFocusTimerVisibility();
   updateAdmCooldownMeta();
 
   g('admToast').textContent = '✅ Settings saved!';

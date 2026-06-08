@@ -5,6 +5,12 @@ var focusIdx   = -1;
 var focusFsSteps = [0.85, 1.0, 1.1, 1.25, 1.4, 1.6, 1.85, 2.1];
 var focusFsIdx   = 3; // default 1.25×
 
+function updateFocusTimerVisibility() {
+  var el = g('focusTimer');
+  if (!el) return;
+  el.style.display = CFG.focusTimer === false ? 'none' : 'flex';
+}
+
 function openFocus(colIdx) {
   focusIdx = colIdx;
   renderFocusCard(colIdx);
@@ -37,6 +43,7 @@ function renderFocusCard(colIdx) {
   var hdr = g('focusHeader');
   hdr.className = 'focus-header ' + cd.colorClass;
   g('focusTitle').textContent = cd.title;
+  updateFocusTimerVisibility();
 
   // Build body — reuse the same input elements from allQ
   var body = g('focusBody');
